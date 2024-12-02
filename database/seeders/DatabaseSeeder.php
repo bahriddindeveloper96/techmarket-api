@@ -6,18 +6,11 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run()
+    public function run(): void
     {
-        // First create categories
-        $this->call(CategorySeeder::class);
-
-        // Then create attributes and attribute groups
-        $this->call(AttributeSeeder::class);
-
-        // Finally create products with variants
-        $this->call(ProductSeeder::class);
+        $this->call([
+            DeliveryMethodSeeder::class,
+            PaymentMethodSeeder::class,
+        ]);
     }
 }

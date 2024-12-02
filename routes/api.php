@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DeliveryMethodController;
 use App\Http\Controllers\Api\FileController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,4 +52,19 @@ Route::middleware('auth:sanctum')->group(function () {
         // Variant price management
         Route::put('{productId}/variants/{variantId}/price', [ProductController::class, 'updateVariantPrice']);
     });
+
+    // Delivery Methods
+    Route::get('delivery-methods', [DeliveryMethodController::class, 'index']);
+    Route::get('delivery-methods/{deliveryMethod}', [DeliveryMethodController::class, 'show']);
+    Route::get('delivery-methods/{deliveryMethod}/calculate', [DeliveryMethodController::class, 'calculateCost']);
+
+    // Payment Methods
+    Route::get('payment-methods', [PaymentMethodController::class, 'index']);
+    Route::get('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'show']);
+
+    // Orders
+    Route::get('orders', [OrderController::class, 'index']);
+    Route::post('orders', [OrderController::class, 'store']);
+    Route::get('orders/{order}', [OrderController::class, 'show']);
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
 });

@@ -1,0 +1,338 @@
+{
+	"info": {
+		"_postman_id": "1234-5678-9012-3456",
+		"name": "TurboMarket API",
+		"description": "TurboMarket e-commerce API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"description": "Available: en, ru, uz"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories"]
+						},
+						"description": "Get list of all categories with translations"
+					}
+				},
+				{
+					"name": "Get Category by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"description": "Available: en, ru, uz"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/categories/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories", "1"]
+						},
+						"description": "Get single category by ID with translations"
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"description": "Available: en, ru, uz"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products"],
+							"query": [
+								{
+									"key": "category_id",
+									"value": "1",
+									"description": "Filter by category ID",
+									"disabled": true
+								},
+								{
+									"key": "featured",
+									"value": "true",
+									"description": "Filter featured products",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all products with translations and variants"
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"description": "Available: en, ru, uz"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/products/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "1"]
+						},
+						"description": "Get single product by ID with translations and variants"
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"slug\": \"xiaomi-13-pro\",\n    \"category_id\": 1,\n    \"active\": true,\n    \"featured\": true,\n    \"images\": [\"xiaomi13pro-1.jpg\", \"xiaomi13pro-2.jpg\"],\n    \"attributes\": {\n        \"Brand\": \"Xiaomi\",\n        \"Display Size\": \"6.73 inches\",\n        \"Display Resolution\": \"3200 x 1440 pixels\",\n        \"Processor\": \"Snapdragon 8 Gen 2\",\n        \"Main Camera\": \"50MP + 50MP + 50MP\",\n        \"Front Camera\": \"32MP\",\n        \"Battery Capacity\": \"4820 mAh\",\n        \"Fast Charging\": true,\n        \"5G Support\": true,\n        \"NFC\": true,\n        \"Wireless Charging\": true,\n        \"Water Resistance\": \"IP68\"\n    },\n    \"translations\": {\n        \"en\": {\n            \"name\": \"Xiaomi 13 Pro\",\n            \"description\": \"Professional photography with Leica optics.\"\n        },\n        \"ru\": {\n            \"name\": \"Xiaomi 13 Pro\",\n            \"description\": \"Профессиональная фотография с оптикой Leica.\"\n        },\n        \"uz\": {\n            \"name\": \"Xiaomi 13 Pro\",\n            \"description\": \"Leica optikasi bilan professional suratga olish.\"\n        }\n    },\n    \"variants\": [\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"256GB\",\n                \"Color\": \"Black\"\n            },\n            \"price\": 899.99,\n            \"stock\": 30\n        },\n        {\n            \"attribute_values\": {\n                \"RAM\": \"12GB\",\n                \"Storage\": \"512GB\",\n                \"Color\": \"White\"\n            },\n            \"price\": 999.99,\n            \"stock\": 20\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products"]
+						},
+						"description": "Create new product with translations and variants"
+					}
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"active\": true,\n    \"featured\": true,\n    \"images\": [\"xiaomi13pro-1.jpg\", \"xiaomi13pro-2.jpg\", \"xiaomi13pro-3.jpg\"],\n    \"attributes\": {\n        \"Battery Capacity\": \"4820 mAh\",\n        \"Fast Charging\": true\n    },\n    \"translations\": {\n        \"en\": {\n            \"description\": \"Updated: Professional photography with Leica optics.\"\n        },\n        \"ru\": {\n            \"description\": \"Обновлено: Профессиональная фотография с оптикой Leica.\"\n        },\n        \"uz\": {\n            \"description\": \"Yangilandi: Leica optikasi bilan professional suratga olish.\"\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "1"]
+						},
+						"description": "Update existing product"
+					}
+				}
+			]
+		},
+		{
+			"name": "Product Variants",
+			"item": [
+				{
+					"name": "Get Product Variants",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products/1/variants",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "1", "variants"]
+						},
+						"description": "Get all variants of a product"
+					}
+				},
+				{
+					"name": "Update Variant Stock",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"stock\": 25\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products/1/variants/1/stock",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "1", "variants", "1", "stock"]
+						},
+						"description": "Update stock quantity of a product variant"
+					}
+				},
+				{
+					"name": "Update Variant Price",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 949.99\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products/1/variants/1/price",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products", "1", "variants", "1", "price"]
+						},
+						"description": "Update price of a product variant"
+					}
+				}
+			]
+		},
+		{
+			"name": "Attributes",
+			"item": [
+				{
+					"name": "Get All Attributes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/attributes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attributes"]
+						},
+						"description": "Get list of all attributes with their groups"
+					}
+				},
+				{
+					"name": "Get Attribute Groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/attribute-groups",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attribute-groups"]
+						},
+						"description": "Get list of all attribute groups"
+					}
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "{{language}}",
+								"type": "text",
+								"description": "Available languages: en, ru, uz"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"phone\": \"+998901234567\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"phone\": \"+998901234567\"\n}"
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"User registered successfully\",\n    \"data\": {\n        \"user\": {\n            \"id\": 1,\n            \"email\": \"test@example.com\",\n            \"phone\": \"+998901234567\",\n            \"created_at\": \"2024-12-02T12:30:00.000000Z\",\n            \"updated_at\": \"2024-12-02T12:30:00.000000Z\",\n            \"translations\": [\n                {\n                    \"id\": 1,\n                    \"user_id\": 1,\n                    \"locale\": \"en\",\n                    \"name\": \"Test User\",\n                    \"bio\": null,\n                    \"address\": null,\n                    \"created_at\": \"2024-12-02T12:30:00.000000Z\",\n                    \"updated_at\": \"2024-12-02T12:30:00.000000Z\"\n                },\n                {\n                    \"id\": 2,\n                    \"user_id\": 1,\n                    \"locale\": \"ru\",\n                    \"name\": \"Test User\",\n                    \"bio\": null,\n                    \"address\": null,\n                    \"created_at\": \"2024-12-02T12:30:00.000000Z\",\n                    \"updated_at\": \"2024-12-02T12:30:00.000000Z\"\n                },\n                {\n                    \"id\": 3,\n                    \"user_id\": 1,\n                    \"locale\": \"uz\",\n                    \"name\": \"Test User\",\n                    \"bio\": null,\n                    \"address\": null,\n                    \"created_at\": \"2024-12-02T12:30:00.000000Z\",\n                    \"updated_at\": \"2024-12-02T12:30:00.000000Z\"\n                }\n            ]\n        },\n        \"token\": \"1|example-token-string\"\n    }\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		}
+	]
+}

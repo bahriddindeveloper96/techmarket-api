@@ -1,0 +1,423 @@
+{
+    "info": {
+        "_postman_id": "random-uuid",
+        "name": "TechMarket Admin API",
+        "description": "TechMarket Admin Panel API documentation",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Admin Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "login"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "item": [
+                {
+                    "name": "Get Dashboard Data",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/dashboard",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "dashboard"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/dashboard/stats",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "dashboard", "stats"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Chart Data",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/dashboard/chart-data?days=30",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "dashboard", "chart-data"],
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "30"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Products",
+            "item": [
+                {
+                    "name": "List Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/products?search=&category_id=&active=&featured=&sort_field=created_at&sort_order=desc&per_page=15",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "products"],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "active",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "featured",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "sort_field",
+                                    "value": "created_at"
+                                },
+                                {
+                                    "key": "sort_order",
+                                    "value": "desc"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "15"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"category_id\": 1,\n    \"translations\": {\n        \"uz\": {\n            \"name\": \"Mahsulot nomi\",\n            \"description\": \"Mahsulot haqida\"\n        },\n        \"ru\": {\n            \"name\": \"Название продукта\",\n            \"description\": \"О продукте\"\n        },\n        \"en\": {\n            \"name\": \"Product name\",\n            \"description\": \"About product\"\n        }\n    },\n    \"price\": 100000,\n    \"stock\": 10,\n    \"images\": [\"image1.jpg\", \"image2.jpg\"],\n    \"active\": true,\n    \"featured\": false,\n    \"attributes\": {\n        \"1\": \"value1\",\n        \"2\": \"value2\"\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/products",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "products"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Product",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"category_id\": 1,\n    \"translations\": {\n        \"uz\": {\n            \"name\": \"Yangilangan nom\",\n            \"description\": \"Yangilangan ma'lumot\"\n        },\n        \"ru\": {\n            \"name\": \"Обновленное название\",\n            \"description\": \"Обновленная информация\"\n        },\n        \"en\": {\n            \"name\": \"Updated name\",\n            \"description\": \"Updated description\"\n        }\n    },\n    \"price\": 150000,\n    \"stock\": 15,\n    \"images\": [\"new_image1.jpg\", \"new_image2.jpg\"],\n    \"active\": true,\n    \"featured\": true,\n    \"attributes\": {\n        \"1\": \"new_value1\",\n        \"2\": \"new_value2\"\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/products/{{product_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "products", "{{product_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Toggle Active",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/products/{{product_id}}/toggle-active",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "products", "{{product_id}}", "toggle-active"]
+                        }
+                    }
+                },
+                {
+                    "name": "Toggle Featured",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/products/{{product_id}}/toggle-featured",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "products", "{{product_id}}", "toggle-featured"]
+                        }
+                    }
+                },
+                {
+                    "name": "Bulk Delete",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"ids\": [1, 2, 3]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/products/bulk-delete",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "products", "bulk-delete"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "List Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/orders?search=&status=&payment_status=&date_from=&date_to=&sort_field=created_at&sort_order=desc&per_page=15",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "orders"],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "status",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "payment_status",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "date_from",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "date_to",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "sort_field",
+                                    "value": "created_at"
+                                },
+                                {
+                                    "key": "sort_order",
+                                    "value": "desc"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "15"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Order",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/orders/{{order_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "orders", "{{order_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Order Status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"processing\",\n    \"comment\": \"Order is being processed\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/orders/{{order_id}}/status",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "orders", "{{order_id}}", "status"]
+                        }
+                    }
+                },
+                {
+                    "name": "Export Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/orders/export?status=&date_from=&date_to=",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "admin", "orders", "export"],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "date_from",
+                                    "value": ""
+                                },
+                                {
+                                    "key": "date_to",
+                                    "value": ""
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000"
+        },
+        {
+            "key": "admin_token",
+            "value": "your_admin_token_here"
+        },
+        {
+            "key": "product_id",
+            "value": "1"
+        },
+        {
+            "key": "order_id",
+            "value": "1"
+        }
+    ]
+}

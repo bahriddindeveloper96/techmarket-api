@@ -22,7 +22,13 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'translations' => ['required', 'array'],
+            'translations.uz' => ['required', 'array'],
+            'translations.uz.name' => ['required', 'string', 'max:255'],
+            'translations.ru' => ['required', 'array'],
+            'translations.ru.name' => ['required', 'string', 'max:255'],
+            'translations.en' => ['required', 'array'],
+            'translations.en.name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['required', 'string', 'max:20', 'unique:users'],
@@ -32,9 +38,11 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('auth.validation.name.required'),
-            'name.string' => __('auth.validation.name.string'),
-            'name.max' => __('auth.validation.name.max'),
+            'translations.required' => 'Translations are required',
+            'translations.*.required' => 'Translation for this language is required',
+            'translations.*.name.required' => 'Name is required for this language',
+            'translations.*.name.string' => 'Name must be a string',
+            'translations.*.name.max' => 'Name may not be greater than 255 characters',
             
             'email.required' => __('auth.validation.email.required'),
             'email.email' => __('auth.validation.email.email'),

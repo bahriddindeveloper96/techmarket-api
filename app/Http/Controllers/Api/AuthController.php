@@ -27,10 +27,10 @@ class AuthController extends Controller
             ]);
 
             // Create translations for all supported languages
-            foreach (config('app.supported_locales', ['en', 'ru', 'uz']) as $locale) {
+            foreach ($validated['translations'] as $locale => $translation) {
                 $user->translations()->create([
                     'locale' => $locale,
-                    'name' => $validated['name']
+                    'name' => $translation['name']
                 ]);
             }
 

@@ -89,17 +89,26 @@ class CategoryController extends Controller
         try {
             DB::beginTransaction();
 
+            // Generate unique slug
+            $slug = Str::slug($request->input('translations.en.name'));
+            $originalSlug = $slug;
+            $count = 1;
+            
+            while (Category::where('slug', $slug)->exists()) {
+                $slug = $originalSlug . '-' . $count;
+                $count++;
+            }
+
             // Create category
             $category = Category::create([
-                'slug' => Str::slug($request->input('translations.en.name')),
+                'slug' => $slug,
                 'image' => $request->input('image'),
                 'active' => $request->input('active', true)
             ]);
 
             // Create translations
             foreach ($request->translations as $locale => $translation) {
-                CategoryTranslation::create([
-                    'category_id' => $category->id,
+                $category->translations()->create([
                     'locale' => $locale,
                     'name' => $translation['name'],
                     'description' => $translation['description']
@@ -110,7 +119,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'message' => 'Category created successfully',
-                'category' => Category::with('translations')->find($category->id)
+                'data' => $category->load('translations')
             ], 201);
 
         } catch (\Exception $e) {
@@ -218,19 +227,20 @@ class CategoryController extends Controller
 
             // Update translations
             foreach ($request->translations as $locale => $translation) {
-                $category->translations()
-                    ->where('locale', $locale)
-                    ->update([
+                $category->translations()->updateOrCreate(
+                    ['locale' => $locale],
+                    [
                         'name' => $translation['name'],
                         'description' => $translation['description']
-                    ]);
+                    ]
+                );
             }
 
             DB::commit();
 
             return response()->json([
                 'message' => 'Category updated successfully',
-                'category' => Category::with('translations')->find($category->id)
+                'data' => $category->load('translations')
             ]);
 
         } catch (\Exception $e) {
@@ -264,10 +274,10 @@ class CategoryController extends Controller
         try {
             DB::beginTransaction();
             
-            // Delete translations
+            // Delete translations first
             $category->translations()->delete();
             
-            // Delete category
+            // Then delete the category
             $category->delete();
             
             DB::commit();

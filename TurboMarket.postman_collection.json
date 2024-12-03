@@ -145,7 +145,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"parent_id\": null,\n    \"translations\": {\n        \"uz\": {\"name\": \"Kategoriya\"},\n        \"ru\": {\"name\": \"Категория\"},\n        \"en\": {\"name\": \"Category\"}\n    }\n}",
+                            "raw": "{\n    \"translations\": {\n        \"uz\": {\n            \"name\": \"Kategoriya nomi\",\n            \"description\": \"Kategoriya tavsifi\"\n        },\n        \"ru\": {\n            \"name\": \"Название категории\",\n            \"description\": \"Описание категории\"\n        },\n        \"en\": {\n            \"name\": \"Category name\",\n            \"description\": \"Category description\"\n        }\n    },\n    \"image\": \"image_url\",\n    \"active\": true\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -192,7 +192,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"parent_id\": null,\n    \"translations\": {\n        \"uz\": {\"name\": \"Yangi Kategoriya\"},\n        \"ru\": {\"name\": \"Новая Категория\"},\n        \"en\": {\"name\": \"New Category\"}\n    }\n}",
+                            "raw": "{\n    \"translations\": {\n        \"uz\": {\n            \"name\": \"Yangi kategoriya nomi\",\n            \"description\": \"Yangi kategoriya tavsifi\"\n        },\n        \"ru\": {\n            \"name\": \"Новое название категории\",\n            \"description\": \"Новое описание категории\"\n        },\n        \"en\": {\n            \"name\": \"New category name\",\n            \"description\": \"New category description\"\n        }\n    },\n    \"image\": \"new_image_url\",\n    \"active\": true\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -221,23 +221,6 @@
                             }
                         ],
                         "url": "{{base_url}}/api/categories/1"
-                    }
-                },
-                {
-                    "name": "Category Products",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json"
-                            },
-                            {
-                                "key": "Accept-Language",
-                                "value": "{{language}}"
-                            }
-                        ],
-                        "url": "{{base_url}}/api/categories/1/products"
                     }
                 }
             ]
@@ -488,11 +471,19 @@
                                 {
                                     "key": "file",
                                     "type": "file",
-                                    "src": []
+                                    "src": [],
+                                    "description": "Image file (JPG, PNG, JPEG, WEBP). Max size: 2MB"
+                                },
+                                {
+                                    "key": "type",
+                                    "type": "text",
+                                    "value": "products",
+                                    "description": "Type of upload (categories, products, brands)"
                                 }
                             ]
                         },
-                        "url": "{{base_url}}/api/upload"
+                        "url": "{{base_url}}/api/upload",
+                        "description": "Upload an image file. Supported types: categories, products, brands. Max file size: 2MB"
                     }
                 },
                 {

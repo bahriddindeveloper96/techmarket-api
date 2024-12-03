@@ -12,8 +12,8 @@ class FileController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg|max:2048',
-            'type' => 'required|in:categories,products'
+            'file' => 'required|file|mimes:jpeg,png,jpg,webp|max:2048',
+            'type' => 'required|in:categories,products,brands'
         ]);
 
         try {
@@ -25,13 +25,16 @@ class FileController extends Controller
             Storage::disk('public')->put($path, file_get_contents($file));
 
             return response()->json([
-                'success' => true,
-                'path' => $path,
-                'url' => Storage::disk('public')->url($path)
+                'status' => 'success',
+                'message' => 'File uploaded successfully',
+                'data' => [
+                    'path' => $path,
+                    'url' => Storage::disk('public')->url($path)
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'status' => 'error',
                 'message' => 'File upload failed: ' . $e->getMessage()
             ], 500);
         }

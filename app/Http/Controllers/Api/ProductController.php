@@ -13,15 +13,64 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['translations', 'category', 'variants'])
-            ->where('active', true)
-            ->get();
+        $query = Product::query()->with(['category', 'variants']);
+
+        // Search by name
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->whereHas('translations', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by category
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter by price range
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Sort products
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'price_asc':
+                    $query->orderBy('price', 'asc');
+                    break;
+                case 'price_desc':
+                    $query->orderBy('price', 'desc');
+                    break;
+                case 'rating':
+                    $query->withAvg('reviews', 'rating')
+                          ->orderByDesc('reviews_avg_rating');
+                    break;
+                case 'latest':
+                    $query->latest();
+                    break;
+                default:
+                    $query->latest();
+            }
+        } else {
+            $query->latest();
+        }
+
+        // Get user's favorites if authenticated
+        if (auth()->check()) {
+            $query->with(['favorites' => function ($q) {
+                $q->where('user_id', auth()->id());
+            }]);
+        }
 
         return response()->json([
-            'success' => true,
-            'data' => $products
+            'products' => $query->paginate($request->per_page ?? 10)
         ]);
     }
 
@@ -338,5 +387,21 @@ class ProductController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function purchaseHistory()
+    {
+        $products = auth()->user()->orders()
+            ->with(['items.product'])
+            ->latest()
+            ->get()
+            ->pluck('items')
+            ->flatten()
+            ->pluck('product')
+            ->unique('id');
+
+        return response()->json([
+            'products' => $products
+        ]);
     }
 }

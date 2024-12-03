@@ -10,6 +10,9 @@ use App\Models\Category;
 use App\Models\ProductTranslation;
 use App\Models\Attribute;
 use App\Models\ProductVariant;
+use App\Models\ProductReview;
+use App\Models\Favorite;
+use App\Models\CompareList;
 
 class Product extends Model
 {
@@ -25,7 +28,7 @@ class Product extends Model
 
     protected $hidden = ['translations'];
 
-    protected $appends = ['name', 'description'];
+    protected $appends = ['name', 'description', 'average_rating', 'favorite_count'];
 
     protected $casts = [
         'price' => 'decimal:2',
@@ -57,6 +60,21 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function compareLists()
+    {
+        return $this->hasMany(CompareList::class);
+    }
+
     public function getNameAttribute()
     {
         $translation = $this->translations->where('locale', app()->getLocale())->first();
@@ -67,6 +85,16 @@ class Product extends Model
     {
         $translation = $this->translations->where('locale', app()->getLocale())->first();
         return $translation ? $translation->description : null;
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->reviews()->where('is_approved', true)->avg('rating') ?? 0;
+    }
+
+    public function getFavoriteCountAttribute()
+    {
+        return $this->favorites()->count();
     }
 
     public function getAttributesByGroup()

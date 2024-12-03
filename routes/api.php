@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CompareListController;
 use App\Http\Controllers\Api\DeliveryMethodController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,7 +45,24 @@ Route::middleware('auth:sanctum')->group(function () {
     // Products
     Route::apiResource('products', ProductController::class);
     Route::get('/featured-products', [ProductController::class, 'featured']);
+    Route::get('/purchase-history', [ProductController::class, 'purchaseHistory']);
     
+    // Product reviews
+    Route::get('/products/{product}/reviews', [ProductReviewController::class, 'index']);
+    Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store']);
+    Route::put('/products/{product}/reviews/{review}', [ProductReviewController::class, 'update']);
+    Route::delete('/products/{product}/reviews/{review}', [ProductReviewController::class, 'destroy']);
+
+    // Favorites
+    Route::post('/favorites/{product}', [FavoriteController::class, 'store']);
+    Route::delete('/favorites/{product}', [FavoriteController::class, 'destroy']);
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+
+    // Compare List
+    Route::get('/compare', [CompareListController::class, 'index']);
+    Route::post('/compare', [CompareListController::class, 'store']);
+    Route::delete('/compare/{compareList}', [CompareListController::class, 'destroy']);
+
     // Product variants
     Route::prefix('products')->group(function () {
         // Variant stock management

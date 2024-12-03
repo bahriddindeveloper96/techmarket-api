@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'role'
     ];
 
     /**
@@ -45,19 +46,36 @@ class User extends Authenticatable
 
     protected $with = ['translations'];
 
+    protected $appends = ['name'];
+
     public function translations()
     {
         return $this->hasMany(UserTranslation::class);
     }
 
-    public function translation($locale = null)
-    {
-        $locale = $locale ?? app()->getLocale();
-        return $this->translations()->where('locale', $locale)->first();
-    }
-
     public function getNameAttribute()
     {
-        return $this->translation()->name ?? null;
+        $translation = $this->translations->where('locale', app()->getLocale())->first();
+        return $translation ? $translation->name : null;
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function compareLists()
+    {
+        return $this->hasMany(CompareList::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\DeliveryMethodController;
+use App\Http\Controllers\Admin\FileController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,10 @@ Route::prefix('admin')->group(function () {
         Route::post('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
         Route::post('products/bulk-delete', [ProductController::class, 'bulkDelete']);
         Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate']);
+
+         // File uploads
+        Route::post('/upload', [FileController::class, 'upload']);
+        Route::post('/delete-file', [FileController::class, 'delete']);
 
         // Categories management
         Route::apiResource('categories', CategoryController::class);

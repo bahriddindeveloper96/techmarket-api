@@ -34,9 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    // File uploads
-    Route::post('/upload', [FileController::class, 'upload']);
-    Route::post('/delete-file', [FileController::class, 'delete']);
+
 
     // Categories
     Route::apiResource('categories', CategoryController::class);
@@ -46,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('products', ProductController::class);
     Route::get('/featured-products', [ProductController::class, 'featured']);
     Route::get('/purchase-history', [ProductController::class, 'purchaseHistory']);
-    
+
     // Product reviews
     Route::get('/products/{product}/reviews', [ProductReviewController::class, 'index']);
     Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store']);
@@ -68,7 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Variant stock management
         Route::get('{productId}/variants/{variantId}/stock', [ProductController::class, 'getVariantStock']);
         Route::put('{productId}/variants/{variantId}/stock', [ProductController::class, 'updateVariantStock']);
-        
+
         // Variant price management
         Route::put('{productId}/variants/{variantId}/price', [ProductController::class, 'updateVariantPrice']);
     });

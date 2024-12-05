@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -29,7 +29,7 @@ class FileController extends Controller
                 'message' => 'File uploaded successfully',
                 'data' => [
                     'path' => $path,
-                    'url' => Storage::disk('public')->url($path)
+                  //  'url' => Storage::disk('public')->url($path)
                 ]
             ]);
         } catch (\Exception $e) {

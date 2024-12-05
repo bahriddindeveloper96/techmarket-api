@@ -1,0 +1,1282 @@
+{
+	"info": {
+		"_postman_id": "7c2efc60-7214-4313-944a-5dd2b53824f9",
+		"name": "TechMarket API",
+		"description": "TechMarket API documentation (Public and Admin endpoints)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25376454"
+	},
+	"item": [
+		{
+			"name": "Public API",
+			"item": [
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List Products",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/products",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Show Product",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/products/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Featured Products",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/featured-products",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"featured-products"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Mahsulotlar | Продукты | Products"
+				},
+				{
+					"name": "Categories",
+					"item": [
+						{
+							"name": "List Categories",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/categories",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"categories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Show Category",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/categories/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"categories",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Kategoriyalar | Категории | Categories"
+				},
+				{
+					"name": "Reviews",
+					"item": [
+						{
+							"name": "List Product Reviews",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/products/:id/reviews?lang=uz",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products",
+										":id",
+										"reviews"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "uz",
+											"description": "Til | Язык | Language (uz, ru, en)"
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Mahsulot ID | ID продукта | Product ID"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Review",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Great product!\",\n    \"images\": [\"image1.jpg\", \"image2.jpg\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/products/:id/reviews",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products",
+										":id",
+										"reviews"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Mahsulot ID | ID продукта | Product ID"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Sharhlar | Отзывы | Reviews"
+				},
+				{
+					"name": "Favorites",
+					"item": [
+						{
+							"name": "List Favorites",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/favorites?lang=uz",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"favorites"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "uz",
+											"description": "Til | Язык | Language (uz, ru, en)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add to Favorites",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/favorites/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"favorites",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Mahsulot ID | ID продукта | Product ID"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove from Favorites",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/favorites/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"favorites",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Mahsulot ID | ID продукта | Product ID"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Sevimlilar | Избранное | Favorites"
+				},
+				{
+					"name": "Auth",
+					"item": [
+						{
+							"name": "Register",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"phone\": \"+998901234567\",\n    \"translations\": {\n        \"uz\": {\"name\": \"Foydalanuvchi\"},\n        \"ru\": {\"name\": \"Пользователь\"},\n        \"en\": {\"name\": \"User\"}\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "7|s7qeu0iZmlcuMfmx2nQ0kE2bQVO3jlhPPtD3khDG58e23b2a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Logout",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/logout",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User Profile",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/user",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"user"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Product Variants",
+					"item": [
+						{
+							"name": "Get Variant Stock",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/products/1/variants/1/stock",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products",
+										"1",
+										"variants",
+										"1",
+										"stock"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Variant Stock",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"stock\": 100\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/products/1/variants/1/stock",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products",
+										"1",
+										"variants",
+										"1",
+										"stock"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Variant Price",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"price\": 150000\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/products/1/variants/1/price",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"products",
+										"1",
+										"variants",
+										"1",
+										"price"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delivery Methods",
+					"item": [
+						{
+							"name": "List Delivery Methods",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/delivery-methods",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-methods"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Show Delivery Method",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/delivery-methods/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-methods",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Calculate Delivery Cost",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/delivery-methods/1/calculate?weight=10&region=tashkent",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-methods",
+										"1",
+										"calculate"
+									],
+									"query": [
+										{
+											"key": "weight",
+											"value": "10"
+										},
+										{
+											"key": "region",
+											"value": "tashkent"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Payment Methods",
+					"item": [
+						{
+							"name": "List Payment Methods",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/payment-methods",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"payment-methods"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Show Payment Method",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/payment-methods/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"payment-methods",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "List Orders",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Order",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"delivery_method_id\": 1,\n    \"payment_method_id\": 1,\n    \"delivery_address\": \"Toshkent sh.\",\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2\n        }\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Show Order",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/orders/1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Order",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/orders/1/cancel",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"1",
+										"cancel"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin API",
+			"item": [
+				{
+					"name": "Auth",
+					"item": [
+						{
+							"name": "Admin Login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Admin autentifikatsiya | Аутентификация админа | Admin authentication"
+				},
+				{
+					"name": "Dashboard",
+					"item": [
+						{
+							"name": "Dashboard Stats",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "9|h7OQQclkXdBa2JcfnGG7qJurtvy94VJt9zbHLt3v7d3f8456",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/dashboard/stats?lang=uz",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"dashboard",
+										"stats"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "uz",
+											"description": "Til | Язык | Language (uz, ru, en)"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Boshqaruv paneli | Панель управления | Dashboard"
+				},
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List Products",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/products?lang=uz",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"products"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "uz",
+											"description": "Til | Язык | Language (uz, ru, en)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Product",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"translations\": {\n        \"uz\": {\n            \"name\": \"Mahsulot nomi\",\n            \"description\": \"Mahsulot tavsifi\"\n        },\n        \"ru\": {\n            \"name\": \"Название продукта\",\n            \"description\": \"Описание продукта\"\n        },\n        \"en\": {\n            \"name\": \"Product name\",\n            \"description\": \"Product description\"\n        }\n    },\n    \"category_id\": 1,\n    \"price\": 100,\n    \"images\": [\"image1.jpg\", \"image2.jpg\"],\n    \"attributes\": {\n        \"color\": \"red\",\n        \"size\": \"XL\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/products",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"products"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Mahsulotlarni boshqarish | Управление продуктами | Products management"
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "List Orders",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/admin/orders?lang=uz",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"orders"
+									],
+									"query": [
+										{
+											"key": "lang",
+											"value": "uz",
+											"description": "Til | Язык | Language (uz, ru, en)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Order Status",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"processing\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/orders/:id/status",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"admin",
+										"orders",
+										":id",
+										"status"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Buyurtma ID | ID заказа | Order ID"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Buyurtmalarni boshqarish | Управление заказами | Orders management"
+				},
+				{
+					"name": "Files",
+					"item": [
+						{
+							"name": "Upload File",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"description": "Image file (JPG, PNG, JPEG, WEBP). Max size: 2MB",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "type",
+											"value": "products",
+											"description": "Type of upload (categories, products, brands)",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/upload",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"upload"
+									]
+								},
+								"description": "Upload an image file. Supported types: categories, products, brands. Max file size: 2MB"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete File",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "{{language}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"path\": \"uploads/image.jpg\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/delete-file",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delete-file"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			],
+			"description": "Admin panel | Админ панель | Admin panel"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "127.0.0.1:8000",
+			"type": "string"
+		}
+	]
+}

@@ -23,7 +23,8 @@ class Product extends Model
         'category_id',
         'images',
         'active',
-        'featured'
+        'featured',
+        'user_id'
     ];
 
     protected $hidden = ['translations'];
@@ -41,6 +42,10 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function translations(): HasMany

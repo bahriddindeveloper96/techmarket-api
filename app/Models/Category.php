@@ -5,13 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\CategoryTranslation;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Category extends Model
 {
     protected $fillable = [
         'slug',
         'image',
-        'active'
+        'active',
+        'user_id',
     ];
 
     protected $hidden = ['translations'];
@@ -21,6 +23,10 @@ class Category extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function translations(): HasMany

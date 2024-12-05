@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0);
             $table->integer('stock')->default(0);
             $table->foreignId('category_id')->constrained();
+            $table->foreignId('user_id')->constrained();
             $table->json('images')->nullable();
             $table->boolean('active')->default(true);
             $table->boolean('featured')->default(false);

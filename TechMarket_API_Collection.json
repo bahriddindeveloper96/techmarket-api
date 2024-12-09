@@ -1,0 +1,98 @@
+{
+	"info": {
+		"_postman_id": "techmarket-api-collection",
+		"name": "TechMarket API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Create Static Token User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"static_access@techmarket.api\",\n    \"password\": \"StaticToken2024!\",\n    \"password_confirmation\": \"StaticToken2024!\",\n    \"role\": \"user\",\n    \"translations\": [\n        {\n            \"locale\": \"uz\",\n            \"name\": \"Statik Foydalanuvchi\"\n        },\n        {\n            \"locale\": \"ru\",\n            \"name\": \"Статический Пользователь\"\n        },\n        {\n            \"locale\": \"en\",\n            \"name\": \"Static User\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/create-static-token-user",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "create-static-token-user"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@techmarket.api\",\n    \"password\": \"AdminPassword2024!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "admin_token",
+			"value": ""
+		},
+		{
+			"key": "user_token",
+			"value": ""
+		}
+	]
+}

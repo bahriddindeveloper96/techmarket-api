@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "7c2efc60-7214-4313-944a-5dd2b53824f9",
+		"_postman_id": "0238549d-5187-4cae-bc47-7d311288248b",
 		"name": "TurboMarket API",
 		"description": "TurboMarket API documentation (Public and Admin endpoints)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25376454"
+		"_exporter_id": "38055963"
 	},
 	"item": [
 		{
@@ -16,6 +16,16 @@
 						{
 							"name": "List Products",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "9|hKxtVj5CHqMYzwT9RLLrkMhY8aXxK9PlLuT6jPki0c13bd27",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [
 									{
@@ -492,6 +502,50 @@
 							"response": []
 						},
 						{
+							"name": "Create Static Token User",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "8|VwOAWET9ywBl0ROoorLNaSX976mqjKX7LGixQy6b763fc6d6",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{admin_token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"static_access@techmarket.api\",\n    \"password\": \"StaticToken2024!\",\n    \"password_confirmation\": \"StaticToken2024!\",\n    \"role\": \"user\",\n    \"translations\": [\n        {\n            \"locale\": \"uz\",\n            \"name\": \"Statik Foydalanuvchi\"\n        },\n        {\n            \"locale\": \"ru\",\n            \"name\": \"Статический Пользователь\"\n        },\n        {\n            \"locale\": \"en\",\n            \"name\": \"Static User\"\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/create-static-token-user",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"create-static-token-user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Get Static Token",
 							"request": {
 								"method": "GET",
@@ -505,31 +559,6 @@
 										"api",
 										"auth",
 										"static-token"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Validate Token",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{static_token}}",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/api/auth/validate-token",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"auth",
-										"validate-token"
 									]
 								}
 							},
@@ -1044,7 +1073,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "9|h7OQQclkXdBa2JcfnGG7qJurtvy94VJt9zbHLt3v7d3f8456",
+											"value": "9|hKxtVj5CHqMYzwT9RLLrkMhY8aXxK9PlLuT6jPki0c13bd27",
 											"type": "string"
 										}
 									]

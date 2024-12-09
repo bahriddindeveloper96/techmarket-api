@@ -47,6 +47,17 @@ class Kernel extends HttpKernel
     ];
 
     /**
+     * The application's route middleware.
+     *
+     * These middleware may be assigned to groups or used individually.
+     *
+     * @var array<string, class-string|string>
+     */
+    protected $routeMiddleware = [
+        'role' => \App\Http\Middleware\CheckUserRole::class,
+    ];
+
+    /**
      * The application's middleware aliases.
      *
      * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
+use App\Http\Controllers\Api\StaticTokenController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +28,12 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    
+    // Faqat admin uchun static token user yaratish
+    Route::middleware(['auth:sanctum', 'role:admin'])->post('/create-static-token-user', [AuthController::class, 'createStaticTokenUser']);
+    
+    Route::get('static-token', [StaticTokenController::class, 'generateToken']);
+    Route::middleware('auth:sanctum')->post('validate-token', [StaticTokenController::class, 'validateToken']);
 });
 
 // Protected routes

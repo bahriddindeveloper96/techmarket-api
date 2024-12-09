@@ -16,5 +16,12 @@ class AdminSeeder extends Seeder
             'role' => 'admin',
             'phone' => '+1234567890'
         ]);
+        User::create([
+            'email' => 'seller@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'seller',
+            'phone' => '+1234567890'
+        ]);
+        
     }
 }

@@ -1,0 +1,230 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+		"name": "TechMarket Admin Products",
+		"description": "TechMarket admin products API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Product",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category_id\": 1,\n    \"user_id\": 1,\n    \"slug\": \"iphone-15-pro\",\n    \"active\": true,\n    \"featured\": true,\n    \"images\": [\"iphone15pro-1.jpg\", \"iphone15pro-2.jpg\"],\n    \"attributes\": {\n        \"Brand\": \"Apple\",\n        \"Display Size\": \"6.1 inches\",\n        \"Display Resolution\": \"2556 x 1179 pixels\",\n        \"Processor\": \"A17 Pro chip\",\n        \"Main Camera\": \"48MP + 12MP + 12MP\",\n        \"Front Camera\": \"12MP TrueDepth\",\n        \"Battery Capacity\": \"3274 mAh\",\n        \"Fast Charging\": true,\n        \"5G Support\": true,\n        \"NFC\": true,\n        \"Wireless Charging\": true,\n        \"Water Resistance\": \"IP68\"\n    },\n    \"translations\": {\n        \"en\": {\n            \"name\": \"iPhone 15 Pro\",\n            \"description\": \"The most advanced iPhone ever with A17 Pro chip and titanium design.\"\n        },\n        \"ru\": {\n            \"name\": \"iPhone 15 Pro\",\n            \"description\": \"Самый продвинутый iPhone с чипом A17 Pro и титановым корпусом.\"\n        },\n        \"uz\": {\n            \"name\": \"iPhone 15 Pro\",\n            \"description\": \"A17 Pro protsessori va titan dizaynli eng ilg'or iPhone.\"\n        }\n    },\n    \"variants\": [\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"128GB\",\n                \"Color\": \"Black\"\n            },\n            \"price\": 999.99,\n            \"stock\": 50\n        },\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"256GB\",\n                \"Color\": \"Silver\"\n            },\n            \"price\": 1099.99,\n            \"stock\": 30\n        },\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"512GB\",\n                \"Color\": \"Gold\"\n            },\n            \"price\": 1299.99,\n            \"stock\": 20\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/admin/products",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"products"
+					]
+				},
+				"description": "Create a new product with variants, translations and attributes"
+			}
+		},
+		{
+			"name": "Update Product",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"category_id\": 1,\n    \"user_id\": 1,\n    \"slug\": \"iphone-15-pro\",\n    \"active\": true,\n    \"featured\": true,\n    \"images\": [\"iphone15pro-1.jpg\", \"iphone15pro-2.jpg\"],\n    \"attributes\": {\n        \"Brand\": \"Apple\",\n        \"Display Size\": \"6.1 inches\",\n        \"Display Resolution\": \"2556 x 1179 pixels\",\n        \"Processor\": \"A17 Pro chip\",\n        \"Main Camera\": \"48MP + 12MP + 12MP\",\n        \"Front Camera\": \"12MP TrueDepth\",\n        \"Battery Capacity\": \"3274 mAh\",\n        \"Fast Charging\": true,\n        \"5G Support\": true,\n        \"NFC\": true,\n        \"Wireless Charging\": true,\n        \"Water Resistance\": \"IP68\"\n    },\n    \"translations\": {\n        \"en\": {\n            \"name\": \"iPhone 15 Pro\",\n            \"description\": \"The most advanced iPhone ever with A17 Pro chip and titanium design.\"\n        },\n        \"ru\": {\n            \"name\": \"iPhone 15 Pro\",\n            \"description\": \"Самый продвинутый iPhone с чипом A17 Pro и титановым корпусом.\"\n        },\n        \"uz\": {\n            \"name\": \"iPhone 15 Pro\",\n            \"description\": \"A17 Pro protsessori va titan dizaynli eng ilg'or iPhone.\"\n        }\n    },\n    \"variants\": [\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"128GB\",\n                \"Color\": \"Black\"\n            },\n            \"price\": 999.99,\n            \"stock\": 50\n        },\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"256GB\",\n                \"Color\": \"Silver\"\n            },\n            \"price\": 1099.99,\n            \"stock\": 30\n        },\n        {\n            \"attribute_values\": {\n                \"RAM\": \"8GB\",\n                \"Storage\": \"512GB\",\n                \"Color\": \"Gold\"\n            },\n            \"price\": 1299.99,\n            \"stock\": 20\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/admin/products/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"products",
+						"1"
+					]
+				},
+				"description": "Update an existing product with variants, translations and attributes"
+			}
+		},
+		{
+			"name": "Get Products",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/admin/products",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"products"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "iphone",
+							"disabled": true
+						},
+						{
+							"key": "category_id",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "sort",
+							"value": "price_asc",
+							"disabled": true
+						},
+						{
+							"key": "per_page",
+							"value": "10",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get list of products with optional filters"
+			}
+		},
+		{
+			"name": "Get Product",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/admin/products/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"products",
+						"1"
+					]
+				},
+				"description": "Get a single product by ID"
+			}
+		},
+		{
+			"name": "Delete Product",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/admin/products/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"products",
+						"1"
+					]
+				},
+				"description": "Delete a product"
+			}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_AUTH_TOKEN",
+			"type": "string"
+		}
+	]
+}

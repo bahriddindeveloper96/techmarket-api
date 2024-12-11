@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Validator;
 
-
 class ProductController extends Controller
 {
     public function index(Request $request)
@@ -97,53 +96,49 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,id',
+            'user_id' => 'required|exists:users,id',
+            'slug' => 'required|string|unique:products',
+            'active' => 'required|boolean',
+            'featured' => 'required|boolean',
+            'images' => 'required|array',
+            'attributes' => 'required|array',
             'translations' => 'required|array',
-            'translations.uz' => 'required|array',
-            'translations.uz.name' => 'required|string|max:255',
-            'translations.uz.description' => 'required|string',
-            'translations.ru' => 'required|array',
-            'translations.ru.name' => 'required|string|max:255',
-            'translations.ru.description' => 'required|string',
             'translations.en' => 'required|array',
             'translations.en.name' => 'required|string|max:255',
             'translations.en.description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'attributes' => 'array',
+            'translations.ru' => 'required|array',
+            'translations.ru.name' => 'required|string|max:255',
+            'translations.ru.description' => 'required|string',
+            'translations.uz' => 'required|array',
+            'translations.uz.name' => 'required|string|max:255',
+            'translations.uz.description' => 'required|string',
+            'variants' => 'required|array',
+            'variants.*.attribute_values' => 'required|array',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.stock' => 'required|integer|min:0'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         try {
             DB::beginTransaction();
 
-            // Generate unique slug
-            $slug = Str::slug($request->input('translations.en.name'));
-            $originalSlug = $slug;
-            $count = 1;
-
-            while (Product::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
-                $count++;
-            }
-
             // Create product
             $product = Product::create([
-                'user_id' => auth()->id(),
-                'category_id' => $request->input('category_id'),
-                'slug' => $slug,
-                'price' => $request->input('price'),
-                'active' => true,
-                'attributes' => $request->input('attributes', [])
-            ]);
-
-            // Create default variant if no variants provided
-            $product->variants()->create([
-                'name' => 'Default',
-                'price' => $request->input('price'),
-                'stock' => 0,
-                'active' => true,
-                'sku' => strtoupper(Str::slug($request->input('translations.en.name'))) . '-' . strtoupper(Str::random(4)),
-                'attribute_values' => []
+                'user_id' => $request->user_id,
+                'category_id' => $request->category_id,
+                'slug' => $request->slug,
+                'active' => $request->active,
+                'featured' => $request->featured,
+                'images' => $request->images,
+                'attributes' => $request->attributes
             ]);
 
             // Create translations
@@ -155,9 +150,21 @@ class ProductController extends Controller
                 ]);
             }
 
+            // Create variants
+            foreach ($request->variants as $variantData) {
+                $product->variants()->create([
+                    'attribute_values' => $variantData['attribute_values'],
+                    'price' => $variantData['price'],
+                    'stock' => $variantData['stock'],
+                    'active' => true,
+                    'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
+                'success' => true,
                 'message' => 'Product created successfully',
                 'data' => $product->load(['translations', 'variants'])
             ], 201);
@@ -165,8 +172,8 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Error creating product',
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => 'Error creating product: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -176,17 +183,24 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'slug' => 'unique:products,slug,' . $id,
-            'category_id' => 'exists:categories,id',
-            'images' => 'nullable|array',
-            'active' => 'boolean',
-            'featured' => 'boolean',
-            'translations' => 'array',
-            'translations.*.locale' => 'required|in:en,ru,uz',
-            'translations.*.name' => 'required|string',
-            'translations.*.description' => 'required|string',
-            'attributes' => 'array',
-            'variants' => 'array',
+            'category_id' => 'required|exists:categories,id',
+            'user_id' => 'required|exists:users,id',
+            'slug' => 'required|string|unique:products,slug,' . $id,
+            'active' => 'required|boolean',
+            'featured' => 'required|boolean',
+            'images' => 'required|array',
+            'attributes' => 'required|array',
+            'translations' => 'required|array',
+            'translations.en' => 'required|array',
+            'translations.en.name' => 'required|string|max:255',
+            'translations.en.description' => 'required|string',
+            'translations.ru' => 'required|array',
+            'translations.ru.name' => 'required|string|max:255',
+            'translations.ru.description' => 'required|string',
+            'translations.uz' => 'required|array',
+            'translations.uz.name' => 'required|string|max:255',
+            'translations.uz.description' => 'required|string',
+            'variants' => 'required|array',
             'variants.*.attribute_values' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0'
@@ -203,57 +217,48 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             // Update product
-            $product->update($request->only([
-                'slug', 'category_id', 'images', 'active', 'featured'
-            ]));
+            $product->update([
+                'user_id' => $request->user_id,
+                'category_id' => $request->category_id,
+                'slug' => $request->slug,
+                'active' => $request->active,
+                'featured' => $request->featured,
+                'images' => $request->images,
+                'attributes' => $request->attributes
+            ]);
 
             // Update translations
-            if ($request->has('translations')) {
-                foreach ($request->translations as $translation) {
-                    ProductTranslation::updateOrCreate(
-                        [
-                            'product_id' => $product->id,
-                            'locale' => $translation['locale']
-                        ],
-                        [
-                            'name' => $translation['name'],
-                            'description' => $translation['description']
-                        ]
-                    );
-                }
-            }
-
-            // Update attributes
-            if ($request->has('attributes')) {
-                $product->attributes()->detach();
-                foreach ($request->attributes as $attributeName => $value) {
-                    $attribute = Attribute::where('name', $attributeName)->first();
-                    if ($attribute) {
-                        $product->attributes()->attach($attribute->id, ['value' => $value]);
-                    }
-                }
+            foreach ($request->translations as $locale => $translation) {
+                ProductTranslation::updateOrCreate(
+                    [
+                        'product_id' => $product->id,
+                        'locale' => $locale
+                    ],
+                    [
+                        'name' => $translation['name'],
+                        'description' => $translation['description']
+                    ]
+                );
             }
 
             // Update variants
-            if ($request->has('variants')) {
-                // Delete old variants
-                $product->variants()->delete();
-
-                // Create new variants
-                foreach ($request->variants as $variantData) {
-                    $product->createVariant(
-                        $variantData['attribute_values'],
-                        $variantData['price'],
-                        $variantData['stock']
-                    );
-                }
+            $product->variants()->delete(); // Delete old variants
+            foreach ($request->variants as $variantData) {
+                $product->variants()->create([
+                    'attribute_values' => $variantData['attribute_values'],
+                    'price' => $variantData['price'],
+                    'stock' => $variantData['stock'],
+                    'active' => true,
+                    'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
+                ]);
             }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'data' => $product->load(['translations', 'category', 'variants', 'attributes.group'])
+                'message' => 'Product updated successfully',
+                'data' => $product->load(['translations', 'variants', 'category'])
             ]);
 
         } catch (\Exception $e) {

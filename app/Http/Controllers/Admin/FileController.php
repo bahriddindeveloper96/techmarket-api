@@ -29,7 +29,7 @@ class FileController extends Controller
                 'message' => 'File uploaded successfully',
                 'data' => [
                     'path' => $path,
-                  //  'url' => Storage::disk('public')->url($path)
+                    'url' => Storage::disk('public')->url($path)
                 ]
             ]);
         } catch (\Exception $e) {

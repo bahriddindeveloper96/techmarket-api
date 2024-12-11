@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\FileType;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\FileController;
-
+use App\Http\Requests\ProductImageRequest;
 use App\Models\Attribute;
 use App\Models\Product;
 use App\Models\ProductTranslation;
 use App\Models\ProductVariant;
-
+use App\Services\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,44 +19,12 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    public function uploadImages(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate each file
-        ]);
+    // protected FileService $fileService;
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $paths = [];
-
-        try {
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('products', 'public'); // Store in the 'products' directory within 'public'
-                    $paths[] = '/storage/' . $path; // Build the public URL
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'paths' => $paths,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error uploading images: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error uploading images',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    // public function __construct(FileService $fileService)
+    // {
+    //     $this->fileService = $fileService;
+    // }
 
     public function index(Request $request)
     {
@@ -441,21 +409,185 @@ class ProductController extends Controller
         }
     }
 
-    public function purchaseHistory()
-    {
-        $products = auth()->user()->orders()
-            ->with(['items.product'])
-            ->latest()
-            ->get()
-            ->pluck('items')
-            ->flatten()
-            ->pluck('product')
-            ->unique('id');
+    // public function purchaseHistory()
+    // {
+    //     $products = auth()->user()->orders()
+    //         ->with(['items.product'])
+    //         ->latest()
+    //         ->get()
+    //         ->pluck('items')
+    //         ->flatten()
+    //         ->pluck('product')
+    //         ->unique('id');
 
-        return response()->json([
-            'products' => $products
-        ]);
-    }
+    //     return response()->json([
+    //         'products' => $products
+    //     ]);
+    // }
 
-  
+    // public function uploadImages(ProductImageRequest $request)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $product = Product::findOrFail($request->product_id);
+    //         $uploadedImages = [];
+
+    //         $fileController = new FileController($this->fileService);
+
+    //         foreach ($request->file('images') as $image) {
+    //             $uploadRequest = new \Illuminate\Http\Request(['file' => $image, 'type' => FileType::PRODUCT]);
+    //             $uploadResponse = $fileController->upload($uploadRequest);
+    //             $result = json_decode($uploadResponse->getContent(), true);
+
+    //             if ($result['status'] === 'success') {
+    //                 $uploadedImages[] = $result['data']['path'];
+    //             } else {
+    //                 throw new \Exception($result['message']);
+    //             }
+    //         }
+
+    //         // Update product images
+    //         $currentImages = $product->images ?? [];
+    //         $product->images = array_merge($currentImages, $uploadedImages);
+
+    //         // If this is the first image or is_main is true, set it as the main image
+    //         if (empty($currentImages) || $request->is_main) {
+    //             $product->main_image = end($uploadedImages);
+    //         }
+
+    //         $product->save();
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Images uploaded successfully',
+    //             'data' => [
+    //                 'images' => $product->images,
+    //                 'main_image' => $product->main_image
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Product image upload failed', [
+    //             'error' => $e->getMessage(),
+    //             'product_id' => $request->product_id
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to upload images: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // public function deleteImage(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'product_id' => 'required|exists:products,id',
+    //         'image_path' => 'required|string'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $product = Product::findOrFail($request->product_id);
+
+    //         // Check if image exists in product images
+    //         if (!in_array($request->image_path, $product->images)) {
+    //             throw new \Exception('Image not found in product images');
+    //         }
+
+    //         // Delete file from storage
+    //         $this->fileService->delete($request->image_path);
+
+    //         // Remove image from product images array
+    //         $images = array_diff($product->images, [$request->image_path]);
+    //         $product->images = array_values($images);
+
+    //         // If deleted image was main image, set first available image as main
+    //         if ($product->main_image === $request->image_path) {
+    //             $product->main_image = !empty($images) ? reset($images) : null;
+    //         }
+
+    //         $product->save();
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Image deleted successfully',
+    //             'data' => [
+    //                 'images' => $product->images,
+    //                 'main_image' => $product->main_image
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Product image deletion failed', [
+    //             'error' => $e->getMessage(),
+    //             'product_id' => $request->product_id,
+    //             'image_path' => $request->image_path
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to delete image: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    // public function setMainImage(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'product_id' => 'required|exists:products,id',
+    //         'image_path' => 'required|string'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     try {
+    //         $product = Product::findOrFail($request->product_id);
+
+    //         // Check if image exists in product images
+    //         if (!in_array($request->image_path, $product->images)) {
+    //             throw new \Exception('Image not found in product images');
+    //         }
+
+    //         $product->main_image = $request->image_path;
+    //         $product->save();
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'Main image updated successfully',
+    //             'data' => [
+    //                 'main_image' => $product->main_image
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         Log::error('Setting main image failed', [
+    //             'error' => $e->getMessage(),
+    //             'product_id' => $request->product_id,
+    //             'image_path' => $request->image_path
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to set main image: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 }

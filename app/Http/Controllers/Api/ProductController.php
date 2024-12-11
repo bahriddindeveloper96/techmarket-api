@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTranslation;
 use App\Models\ProductVariant;
@@ -309,6 +310,23 @@ class ProductController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function homePage()
+    {
+        // Fetch featured products
+        $featuredProducts = Product::where('featured', true)->with(['translations', 'variants', 'category'])->get();
+
+        // Fetch categories
+        $categories = Category::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'featured_products' => $featuredProducts,
+                'categories' => $categories
+            ]
+        ]);
     }
 
     // Variant metodlari

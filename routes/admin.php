@@ -28,11 +28,13 @@ Route::prefix('admin')->group(function () {
         Route::get('dashboard/chart-data', [DashboardController::class, 'chartData']);
 
         // Users management
+        
         Route::apiResource('users', AdminUserController::class);
         Route::post('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive']);
 
         // Products management
         Route::apiResource('products', ProductController::class);
+        Route::post('products/upload-images', [ProductController::class, 'uploadImages']);
         Route::post('products/{product}/toggle-active', [ProductController::class, 'toggleActive']);
         Route::post('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
         Route::post('products/bulk-delete', [ProductController::class, 'bulkDelete']);

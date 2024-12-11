@@ -2,62 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\FileType;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Admin\FileController;
-
 use App\Models\Attribute;
 use App\Models\Product;
 use App\Models\ProductTranslation;
-use App\Models\ProductVariant;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Models\ProductVariant;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    public function uploadImages(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate each file
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $paths = [];
-
-        try {
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('products', 'public'); // Store in the 'products' directory within 'public'
-                    $paths[] = '/storage/' . $path; // Build the public URL
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'paths' => $paths,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error uploading images: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error uploading images',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function index(Request $request)
     {
         $query = Product::query()->with(['category', 'variants']);
@@ -145,6 +102,7 @@ class ProductController extends Controller
             'slug' => 'required|string|unique:products',
             'active' => 'required|boolean',
             'featured' => 'required|boolean',
+            'images' => 'required|array',
             'attributes' => 'required|array',
             'translations' => 'required|array',
             'translations.en' => 'required|array',
@@ -159,8 +117,7 @@ class ProductController extends Controller
             'variants' => 'required|array',
             'variants.*.attribute_values' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',
-            'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.images' => 'array'
+            'variants.*.stock' => 'required|integer|min:0'
         ]);
 
         if ($validator->fails()) {
@@ -180,6 +137,7 @@ class ProductController extends Controller
                 'slug' => $request->slug,
                 'active' => $request->active,
                 'featured' => $request->featured,
+                'images' => $request->images,
                 'attributes' => $request->attributes
             ]);
 
@@ -194,12 +152,11 @@ class ProductController extends Controller
 
             // Create variants
             foreach ($request->variants as $variantData) {
-                $variant = $product->variants()->create([
+                $product->variants()->create([
                     'attribute_values' => $variantData['attribute_values'],
                     'price' => $variantData['price'],
                     'stock' => $variantData['stock'],
                     'active' => true,
-                    'images' => $variantData['images'] ?? [],
                     'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
                 ]);
             }
@@ -231,6 +188,7 @@ class ProductController extends Controller
             'slug' => 'required|string|unique:products,slug,' . $id,
             'active' => 'required|boolean',
             'featured' => 'required|boolean',
+            'images' => 'required|array',
             'attributes' => 'required|array',
             'translations' => 'required|array',
             'translations.en' => 'required|array',
@@ -245,8 +203,7 @@ class ProductController extends Controller
             'variants' => 'required|array',
             'variants.*.attribute_values' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',
-            'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.images' => 'array'
+            'variants.*.stock' => 'required|integer|min:0'
         ]);
 
         if ($validator->fails()) {
@@ -266,6 +223,7 @@ class ProductController extends Controller
                 'slug' => $request->slug,
                 'active' => $request->active,
                 'featured' => $request->featured,
+                'images' => $request->images,
                 'attributes' => $request->attributes
             ]);
 
@@ -291,7 +249,6 @@ class ProductController extends Controller
                     'price' => $variantData['price'],
                     'stock' => $variantData['stock'],
                     'active' => true,
-                    'images' => $variantData['images'] ?? [],
                     'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
                 ]);
             }
@@ -441,21 +398,19 @@ class ProductController extends Controller
         }
     }
 
-    public function purchaseHistory()
-    {
-        $products = auth()->user()->orders()
-            ->with(['items.product'])
-            ->latest()
-            ->get()
-            ->pluck('items')
-            ->flatten()
-            ->pluck('product')
-            ->unique('id');
+    // public function purchaseHistory()
+    // {
+    //     $products = auth()->user()->orders()
+    //         ->with(['items.product'])
+    //         ->latest()
+    //         ->get()
+    //         ->pluck('items')
+    //         ->flatten()
+    //         ->pluck('product')
+    //         ->unique('id');
 
-        return response()->json([
-            'products' => $products
-        ]);
-    }
-
-  
+    //     return response()->json([
+    //         'products' => $products
+    //     ]);
+    // }
 }

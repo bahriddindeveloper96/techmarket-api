@@ -18,7 +18,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'iphone-15-pro',
                 'active' => true,
                 'featured' => true,
-                'images' => ['iphone15pro-1.jpg', 'iphone15pro-2.jpg'],
+              //  'images' => ['iphone15pro-1.jpg', 'iphone15pro-2.jpg'], // Added images
                 'attributes' => [
                     'Brand' => 'Apple',
                     'Display Size' => '6.1 inches',
@@ -55,7 +55,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Black'
                         ],
                         'price' => 999.99,
-                        'stock' => 50
+                        'stock' => 50,
+                        'images' => ['iphone15pro-black-1.jpg', 'iphone15pro-black-2.jpg'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -64,7 +65,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Silver'
                         ],
                         'price' => 1099.99,
-                        'stock' => 30
+                        'stock' => 30,
+                        'images' => ['iphone15pro-silver-1.jpg', 'iphone15pro-silver-2.jpg'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -73,7 +75,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Gold'
                         ],
                         'price' => 1299.99,
-                        'stock' => 20
+                        'stock' => 20,
+                        'images' => ['iphone15pro-gold-1.jpg', 'iphone15pro-gold-2.jpg'] // Variant images
                     ]
                 ]
             ],
@@ -83,7 +86,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'samsung-galaxy-s24-ultra',
                 'active' => true,
                 'featured' => true,
-                'images' => ['s24ultra-1.jpg', 's24ultra-2.jpg'],
+               // 'images' => ['s24ultra-1.jpg', 's24ultra-2.jpg'], // Added images
                 'attributes' => [
                     'Brand' => 'Samsung',
                     'Display Size' => '6.8 inches',
@@ -120,7 +123,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Black'
                         ],
                         'price' => 1299.99,
-                        'stock' => 40
+                        'stock' => 40,
+                        'images' => ['s24ultra-black-1.jpg', 's24ultra-black-2.jpg'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -129,7 +133,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Silver'
                         ],
                         'price' => 1399.99,
-                        'stock' => 25
+                        'stock' => 25,
+                        'images' => ['s24ultra-silver-1.jpg', 's24ultra-silver-2.jpg'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -138,7 +143,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Blue'
                         ],
                         'price' => 1599.99,
-                        'stock' => 15
+                        'stock' => 15,
+                        'images' => ['s24ultra-blue-1.jpg', 's24ultra-blue-2.jpg'] // Variant images
                     ]
                 ]
             ],
@@ -148,7 +154,7 @@ class ProductSeeder extends Seeder
                 'slug' => 'macbook-pro-16',
                 'active' => true,
                 'featured' => true,
-                'images' => ['macbook-pro-16-1.jpg', 'macbook-pro-16-2.jpg'],
+              //  'images' => ['macbook-pro-16-1.jpg', 'macbook-pro-16-2.jpg'], // Added images
                 'attributes' => [
                     'Brand' => 'Apple',
                     'Display Size' => '16.2 inches',
@@ -179,7 +185,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Silver'
                         ],
                         'price' => 2499.99,
-                        'stock' => 20
+                        'stock' => 20,
+                        'images' => ['macbook-silver-1.jpg', 'macbook-silver-2.jpg'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -188,7 +195,8 @@ class ProductSeeder extends Seeder
                             'Color' => 'Black'
                         ],
                         'price' => 2999.99,
-                        'stock' => 15
+                        'stock' => 15,
+                        'images' => ['macbook-black-1.jpg', 'macbook-black-2.jpg'] // Variant images
                     ]
                 ]
             ]
@@ -218,7 +226,8 @@ class ProductSeeder extends Seeder
                 $variant = new ProductVariant([
                     'price' => $variantData['price'],
                     'stock' => $variantData['stock'],
-                    'attribute_values' => $variantData['attribute_values']
+                    'attribute_values' => $variantData['attribute_values'],
+                    'images' => $variantData['images'] // Include images for the variant
                 ]);
                 $product->variants()->save($variant);
             }

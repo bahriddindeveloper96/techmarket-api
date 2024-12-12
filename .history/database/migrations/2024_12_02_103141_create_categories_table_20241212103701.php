@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('categories');
             $table->foreignId('user_id')->constrained();
             $table->string('slug')->unique();
-            $table->json('images')->nullable(); // Add images column as JSON
+            $table->string('image')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
         });

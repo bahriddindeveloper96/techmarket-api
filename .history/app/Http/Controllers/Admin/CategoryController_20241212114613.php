@@ -18,7 +18,17 @@ use Illuminate\Support\Str;
  */
 class CategoryController extends Controller
 {
-
+    /**
+     * @OA\Get(
+     *     path="/api/categories",
+     *     summary="Get list of categories",
+     *     tags={"Categories"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *     )
+     * )
+     */
     public function uploadImages(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -76,7 +86,7 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
+            'image' => 'nullable|array',
             'active' => 'boolean'
         ]);
 
@@ -92,16 +102,12 @@ class CategoryController extends Controller
                 $slug = $originalSlug . '-' . $count;
                 $count++;
             }
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
-            }
 
             // Create category
             $category = Category::create([
                 'user_id' => auth()->id(),
                 'slug' => $slug,
-                'image' => $imagePath ? '/storage/' . $imagePath : null,
+                'image' => $request->input('image'),
                 'active' => $request->input('active', true)
             ]);
 
@@ -210,7 +216,7 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
+            'image' => 'nullable|string',
             'active' => 'boolean'
         ]);
 
@@ -218,13 +224,9 @@ class CategoryController extends Controller
             DB::beginTransaction();
 
             // Update category
-            $imagePath = $category->image; // Keep the current image if no new one is uploaded
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
-            }
             $category->update([
                 'slug' => Str::slug($request->input('translations.en.name')),
-                'image' => $imagePath,
+                'image' => $request->input('image'),
                 'active' => $request->input('active', true)
             ]);
 

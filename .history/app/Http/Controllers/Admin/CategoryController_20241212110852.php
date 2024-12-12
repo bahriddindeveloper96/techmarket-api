@@ -7,7 +7,6 @@ use App\Models\Category;
 use App\Models\CategoryTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 /**
@@ -18,51 +17,58 @@ use Illuminate\Support\Str;
  */
 class CategoryController extends Controller
 {
-
-    public function uploadImages(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate each file
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $paths = [];
-
-        try {
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('category', 'public'); // Store in the 'products' directory within 'public'
-                    $paths[] = '/storage/' . $path; // Build the public URL
-                }
-            }
-
-            return response()->json([
-                'success' => true,
-                'paths' => $paths,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error uploading images: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error uploading images',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    /**
+     * @OA\Get(
+     *     path="/api/categories",
+     *     summary="Get list of categories",
+     *     tags={"Categories"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *     )
+     * )
+     */
     public function index()
     {
         $categories = Category::with('translations')->get();
         return response()->json($categories);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/categories",
+     *     summary="Create a new category",
+     *     tags={"Categories"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"translations", "image", "active"},
+     *             @OA\Property(property="translations", type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="en", type="array",
+     *                         @OA\Property(property="name", type="string"),
+     *                         @OA\Property(property="description", type="string")
+     *                     ),
+     *                     @OA\Property(property="ru", type="array",
+     *                         @OA\Property(property="name", type="string"),
+     *                         @OA\Property(property="description", type="string")
+     *                     ),
+     *                     @OA\Property(property="uz", type="array",
+     *                         @OA\Property(property="name", type="string"),
+     *                         @OA\Property(property="description", type="string")
+     *                     )
+     *                 )
+     *             ),
+     *             @OA\Property(property="image", type="string"),
+     *             @OA\Property(property="active", type="boolean")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Category created successfully"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -76,7 +82,7 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
+            'image' => 'nullable|json',
             'active' => 'boolean'
         ]);
 
@@ -92,16 +98,12 @@ class CategoryController extends Controller
                 $slug = $originalSlug . '-' . $count;
                 $count++;
             }
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
-            }
 
             // Create category
             $category = Category::create([
                 'user_id' => auth()->id(),
                 'slug' => $slug,
-                'image' => $imagePath ? '/storage/' . $imagePath : null,
+                'image' => $request->input('image'),
                 'active' => $request->input('active', true)
             ]);
 
@@ -210,7 +212,7 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
+            'image' => 'nullable|string',
             'active' => 'boolean'
         ]);
 
@@ -218,13 +220,9 @@ class CategoryController extends Controller
             DB::beginTransaction();
 
             // Update category
-            $imagePath = $category->image; // Keep the current image if no new one is uploaded
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
-            }
             $category->update([
                 'slug' => Str::slug($request->input('translations.en.name')),
-                'image' => $imagePath,
+                'image' => $request->input('image'),
                 'active' => $request->input('active', true)
             ]);
 

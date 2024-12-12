@@ -76,7 +76,7 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
+            'image' => 'nullable|array',
             'active' => 'boolean'
         ]);
 
@@ -210,7 +210,7 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
+            'image' => 'nullable|string',
             'active' => 'boolean'
         ]);
 

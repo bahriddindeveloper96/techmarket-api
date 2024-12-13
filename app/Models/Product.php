@@ -17,13 +17,15 @@ use App\Models\CompareList;
 class Product extends Model
 {
     protected $fillable = [
+        'category_id',
         'slug',
         'price',
-        'stock',
-        'category_id',
-     //   'images',
+        'old_price',
+        'quantity',
         'active',
         'featured',
+        'views',
+        'images',
         'user_id'
     ];
 
@@ -32,11 +34,13 @@ class Product extends Model
     protected $appends = ['name', 'description', 'average_rating', 'favorite_count'];
 
     protected $casts = [
-        'price' => 'decimal:2',
-        'stock' => 'integer',
-    //    'images' => 'array',
+        'price' => 'float',
+        'old_price' => 'float',
+        'quantity' => 'integer',
         'active' => 'boolean',
-        'featured' => 'boolean'
+        'featured' => 'boolean',
+        'views' => 'integer',
+        'images' => 'array'
     ];
 
     public function category(): BelongsTo

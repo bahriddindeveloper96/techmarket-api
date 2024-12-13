@@ -6,11 +6,13 @@ use App\Http\Controllers\Api\CompareListController;
 use App\Http\Controllers\Api\DeliveryMethodController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\FileController;
+use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
 use App\Http\Controllers\Api\StaticTokenController;
+use App\Http\Controllers\Admin\BannerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,10 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-
-
     // HomePage
-    Route::get('/homepage', [ProductController::class, 'homePage']);
+    Route::get('/homepage', [HomeController::class, 'index']);
 
     // Categories
     Route::apiResource('categories', CategoryController::class);
@@ -95,4 +95,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('orders', [OrderController::class, 'store']);
     Route::get('orders/{order}', [OrderController::class, 'show']);
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
+
+    // Admin routes
+    Route::middleware(['role:admin'])->group(function () {
+        // Support both /api/admin and /admin prefixes for banners
+        Route::prefix('admin')->group(function () {
+            Route::apiResource('banners', BannerController::class);
+        });
+        
+        Route::prefix('api/admin')->group(function () {
+            Route::apiResource('banners', BannerController::class);
+        });
+    });
 });

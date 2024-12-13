@@ -16,11 +16,13 @@ class Category extends Model
         'active',
         'parent_id',
         'user_id',
+        'order'
     ];
 
     protected $casts = [
         'images' => 'array',
-        'active' => 'boolean'
+        'active' => 'boolean',
+        'order' => 'integer'
     ];
 
     protected $hidden = ['translations'];

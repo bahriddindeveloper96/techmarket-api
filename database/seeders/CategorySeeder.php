@@ -17,6 +17,8 @@ class CategorySeeder extends Seeder
 
                 'active' => true,
                 'featured' => true,
+                'image' => '/storage/categories/accessories.jpg',
+                
                 'translations' => [
                     'en' => [
                         'name' => 'Smartphones',
@@ -37,6 +39,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 1,
                 'active' => true,
                 'featured' => true,
+                'image' => '/storage/categories/accessories.jpg',
                 'translations' => [
                     'en' => [
                         'name' => 'Laptops',
@@ -57,6 +60,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 1,
                 'active' => true,
                 'featured' => false,
+                'image' => '/storage/categories/accessories.jpg',
                 'translations' => [
                     'en' => [
                         'name' => 'Tablets',
@@ -77,6 +81,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 1,
                 'active' => true,
                 'featured' => false,
+                'image' => '/storage/categories/accessories.jpg',
                 'translations' => [
                     'en' => [
                         'name' => 'Accessories',
@@ -97,6 +102,7 @@ class CategorySeeder extends Seeder
                 'user_id' => 1,
                 'active' => true,
                 'featured' => true,
+                'image' => '/storage/categories/accessories.jpg',
                 'translations' => [
                     'en' => [
                         'name' => 'Smart Watches',
@@ -119,6 +125,7 @@ class CategorySeeder extends Seeder
             unset($categoryData['translations']);
 
             $category = Category::create($categoryData);
+            
 
             foreach ($translations as $locale => $translation) {
                 CategoryTranslation::create([

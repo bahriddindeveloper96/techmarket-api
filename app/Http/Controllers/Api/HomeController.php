@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Product;
+use App\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 
 /**
@@ -101,9 +102,9 @@ class HomeController extends Controller
             'data' => [
                 'banners' => $banners,
                 'categories' => $categories,
-                'featured_products' => $featuredProducts,
-                'new_products' => $newProducts,
-                'popular_products' => $popularProducts
+                'featured_products' => ProductResource::collection($featuredProducts),
+                'new_products' => ProductResource::collection($newProducts),
+                'popular_products' => ProductResource::collection($popularProducts)
             ]
         ]);
     }

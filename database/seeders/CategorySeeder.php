@@ -35,8 +35,54 @@ class CategorySeeder extends Seeder
                 ]
             ],
             [
+                'slug' => 'phones',
+                'user_id' => 1,
+                'parent_id' => 1,
+
+                'active' => true,
+                'featured' => true,
+                'image' => '/storage/categories/accessories.jpg',
+                
+                'translations' => [
+                    'en' => [
+                        'name' => 'Smartphones',
+                        'description' => 'Latest smartphones from top brands'
+                    ],
+                    'ru' => [
+                        'name' => 'Смартфоны',
+                        'description' => 'Новейшие смартфоны от ведущих брендов'
+                    ],
+                    'uz' => [
+                        'name' => 'Smartfonlar',
+                        'description' => 'Yetakchi brendlarning eng so\'nggi smartfonlari'
+                    ]
+                ]
+            ],
+            [
                 'slug' => 'laptops',
                 'user_id' => 1,
+                'active' => true,
+                'featured' => true,
+                'image' => '/storage/categories/accessories.jpg',
+                'translations' => [
+                    'en' => [
+                        'name' => 'Laptops',
+                        'description' => 'Professional and gaming laptops'
+                    ],
+                    'ru' => [
+                        'name' => 'Ноутбуки',
+                        'description' => 'Профессиональные и игровые ноутбуки'
+                    ],
+                    'uz' => [
+                        'name' => 'Noutbuklar',
+                        'description' => 'Professional va o\'yin uchun noutbuklar'
+                    ]
+                ]
+            ],
+            [
+                'slug' => 'aptops',
+                'user_id' => 1,
+                'parent_id' => 3,
                 'active' => true,
                 'featured' => true,
                 'image' => '/storage/categories/accessories.jpg',
@@ -77,8 +123,52 @@ class CategorySeeder extends Seeder
                 ]
             ],
             [
+                'slug' => 'lets',
+                'user_id' => 1,
+                'parent_id' => 6,
+                'active' => true,
+                'featured' => false,
+                'image' => '/storage/categories/accessories.jpg',
+                'translations' => [
+                    'en' => [
+                        'name' => 'Tablets',
+                        'description' => 'Tablets for work and entertainment'
+                    ],
+                    'ru' => [
+                        'name' => 'Планшеты',
+                        'description' => 'Планшеты для работы и развлечений'
+                    ],
+                    'uz' => [
+                        'name' => 'Planshetlar',
+                        'description' => 'Ish va ko\'ngil ochar vaqt uchun planshetlar'
+                    ]
+                ]
+            ],
+            [
                 'slug' => 'accessories',
                 'user_id' => 1,
+                'active' => true,
+                'featured' => false,
+                'image' => '/storage/categories/accessories.jpg',
+                'translations' => [
+                    'en' => [
+                        'name' => 'Accessories',
+                        'description' => 'Device accessories and peripherals'
+                    ],
+                    'ru' => [
+                        'name' => 'Аксессуары',
+                        'description' => 'Аксессуары и периферия для устройств'
+                    ],
+                    'uz' => [
+                        'name' => 'Aksessuarlar',
+                        'description' => 'Qurilmalar uchun aksessuarlar va periferiya'
+                    ]
+                ]
+            ],
+            [
+                'slug' => 'access',
+                'user_id' => 1,
+                'parent_id' => 8,
                 'active' => true,
                 'featured' => false,
                 'image' => '/storage/categories/accessories.jpg',
@@ -117,6 +207,28 @@ class CategorySeeder extends Seeder
                         'description' => 'Aqlli soatlar va fitnes trekerlari'
                     ]
                 ]
+                    ],
+            [
+                'slug' => 'watches',
+                'user_id' => 1,
+                'parent_id' => 8,
+                'active' => true,
+                'featured' => true,
+                'image' => '/storage/categories/accessories.jpg',
+                'translations' => [
+                    'en' => [
+                        'name' => 'Smart Watches',
+                        'description' => 'Smart watches and fitness trackers'
+                    ],
+                    'ru' => [
+                        'name' => 'Умные часы',
+                        'description' => 'Умные часы и фитнес-трекеры'
+                    ],
+                    'uz' => [
+                        'name' => 'Aqlli soatlar',
+                        'description' => 'Aqlli soatlar va fitnes trekerlari'
+                    ]
+                ]
             ]
         ];
 
@@ -125,7 +237,7 @@ class CategorySeeder extends Seeder
             unset($categoryData['translations']);
 
             $category = Category::create($categoryData);
-            
+
 
             foreach ($translations as $locale => $translation) {
                 CategoryTranslation::create([

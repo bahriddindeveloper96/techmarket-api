@@ -12,8 +12,15 @@ class Category extends Model
     protected $fillable = [
         'slug',
         'image',
+        'images',
         'active',
+        'parent_id',
         'user_id',
+    ];
+
+    protected $casts = [
+        'images' => 'array',
+        'active' => 'boolean'
     ];
 
     protected $hidden = ['translations'];

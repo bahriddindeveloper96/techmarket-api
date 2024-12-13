@@ -57,15 +57,62 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+
     public function index()
     {
         $categories = Category::with('translations')->get();
         return response()->json($categories);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/admin/categories",
+     *     summary="Create a new category",
+     *     tags={"Categories"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="translations",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="en",
+     *                     type="object",
+     *                     @OA\Property(property="name", type="string", example="Category Name"),
+     *                     @OA\Property(property="description", type="string", example="Category Description")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="ru",
+     *                     type="object",
+     *                     @OA\Property(property="name", type="string", example="Название категории"),
+     *                     @OA\Property(property="description", type="string", example="Описание категории")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="uz",
+     *                     type="object",
+     *                     @OA\Property(property="name", type="string", example="Kategoriya nomi"),
+     *                     @OA\Property(property="description", type="string", example="Kategoriya tavsifi")
+     *                 )
+     *             ),
+     *             @OA\Property(property="active", type="boolean", example=true),
+     *             @OA\Property(property="parent_id", type="integer", nullable=true, example=2),
+     *             @OA\Property(property="images", type="array", @OA\Items(type="string"), example={"/storage/categories/image1.jpg", "/storage/categories/image2.jpg"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Category created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Category created successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'translations' => 'required|array',
             'translations.en' => 'required|array',
             'translations.en.name' => 'required|string|max:255',
@@ -76,38 +123,46 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
-            'active' => 'boolean'
+            'images' => 'nullable|array',
+            'images.*' => 'string',
+            'active' => 'boolean',
+            'parent_id' => 'nullable|exists:categories,id'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         try {
             DB::beginTransaction();
 
             // Generate unique slug
-            $slug = Str::slug($request->input('translations.en.name'));
-            $originalSlug = $slug;
-            $count = 1;
+            $baseSlug = Str::slug($request->input('translations.en.name'));
+            $slug = $baseSlug;
+            $counter = 1;
 
             while (Category::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
-                $count++;
-            }
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
             }
 
             // Create category
             $category = Category::create([
-                'user_id' => auth()->id(),
+                'image' => $request->images[0] ?? null, // Set first image as main image
+                'images' => json_encode($request->images ?? []), // Store all images as JSON
+                'parent_id' => $request->parent_id,
+                'active' => $request->input('active', true),
                 'slug' => $slug,
-                'image' => $imagePath ? '/storage/' . $imagePath : null,
-                'active' => $request->input('active', true)
+                'user_id' => auth()->id() // Add authenticated user's ID
             ]);
 
             // Create translations
             foreach ($request->translations as $locale => $translation) {
-                $category->translations()->create([
+                CategoryTranslation::create([
+                    'category_id' => $category->id,
                     'locale' => $locale,
                     'name' => $translation['name'],
                     'description' => $translation['description']
@@ -117,6 +172,7 @@ class CategoryController extends Controller
             DB::commit();
 
             return response()->json([
+                'success' => true,
                 'message' => 'Category created successfully',
                 'data' => $category->load('translations')
             ], 201);
@@ -124,33 +180,13 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
+                'success' => false,
                 'message' => 'Error creating category',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/categories/{id}",
-     *     summary="Get category by ID",
-     *     tags={"Categories"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Category not found"
-     *     )
-     * )
-     */
     public function show(Category $category)
     {
         return response()->json($category->load('translations'));

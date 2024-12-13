@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTranslation;
+use App\Http\Resources\ProductResource;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,6 +81,23 @@ class ProductController extends Controller
         try {
             $product = Product::with(['translations', 'variants', 'category'])
                 ->findOrFail($id);
+
+            $featuredProducts = Product::with(['translations', 'category.translations'])
+            ->where('featured', true)
+            ->where('active', true)
+            ->latest()
+            ->take(8)
+            ->get();
+
+            return response()->json([
+                'message' => 'Product retrieved successfully',
+                'data' => [
+
+                    'featured_products' => ProductResource::collection($featuredProducts),
+
+                    'data' => $product
+                ]
+            ]);
 
             return response()->json([
                 'message' => 'Product retrieved successfully',

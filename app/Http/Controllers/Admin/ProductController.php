@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\ProductResource;
 
 class ProductController extends Controller
 {
@@ -115,7 +116,7 @@ class ProductController extends Controller
         }
 
         return response()->json([
-            'products' => $query->paginate($request->per_page ?? 10)
+            'products' => ProductResource::collection($query->paginate($request->per_page ?? 10))
         ]);
     }
 

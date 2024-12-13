@@ -14,6 +14,7 @@ class CategorySeeder extends Seeder
             [
                 'slug' => 'smartphones',
                 'user_id' => 1,
+
                 'active' => true,
                 'featured' => true,
                 'translations' => [

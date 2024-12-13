@@ -56,7 +56,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 999.99,
                         'stock' => 50,
-                        'images' => ['iphone15pro-black-1.jpg', 'iphone15pro-black-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -66,7 +66,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1099.99,
                         'stock' => 30,
-                        'images' => ['iphone15pro-silver-1.jpg', 'iphone15pro-silver-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ],
                     [
                         'attribute_values' => [
@@ -76,7 +76,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1299.99,
                         'stock' => 20,
-                        'images' => ['iphone15pro-gold-1.jpg', 'iphone15pro-gold-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ]
                 ]
             ],
@@ -124,7 +124,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1299.99,
                         'stock' => 40,
-                        'images' => ['s24ultra-black-1.jpg', 's24ultra-black-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ],
                     [
                         'attribute_values' => [
@@ -134,7 +134,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1399.99,
                         'stock' => 25,
-                        'images' => ['s24ultra-silver-1.jpg', 's24ultra-silver-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ],
                     [
                         'attribute_values' => [
@@ -144,7 +144,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1599.99,
                         'stock' => 15,
-                        'images' => ['s24ultra-blue-1.jpg', 's24ultra-blue-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ]
                 ]
             ],
@@ -186,7 +186,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 2499.99,
                         'stock' => 20,
-                        'images' => ['macbook-silver-1.jpg', 'macbook-silver-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ],
                     [
                         'attribute_values' => [
@@ -196,7 +196,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 2999.99,
                         'stock' => 15,
-                        'images' => ['macbook-black-1.jpg', 'macbook-black-2.jpg'] // Variant images
+                        'images' => ['http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg', 'http://127.0.0.1:8000/storage/products/RtpDcxhD9IbFj92cjMU8KSBpGXJvwTJPHoWVgI98.jpg']
                     ]
                 ]
             ]

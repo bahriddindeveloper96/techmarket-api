@@ -13,7 +13,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Special Offer',
                 'description' => 'Get 20% off on all products',
-                'image' => 'http://127.0.0.1:8000/storage/products/banner1.jpg',
+                'image' => '127.0.0.1:8000/storage/products/banner.jpg',
                 'url' => '/special-offers',
                 'button_text' => 'Shop Now',
                 'order' => 1,
@@ -22,7 +22,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'New Collection',
                 'description' => 'Check out our new arrivals',
-                'image' => 'http://127.0.0.1:8000/storage/products/banner2.jpg',
+                'image' => '127.0.0.1:8000/storage/products/banner2.jpg',
                 'url' => '/new-arrivals',
                 'button_text' => 'View Collection',
                 'order' => 2,
@@ -31,7 +31,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Holiday Sale',
                 'description' => 'Up to 50% off on selected items',
-                'image' => 'http://127.0.0.1:8000/storage/products/banner3.jpg',
+                'image' => '127.0.0.1:8000/storage/products/banner3.webp',
                 'url' => '/sale',
                 'button_text' => 'Shop Sale',
                 'order' => 3,

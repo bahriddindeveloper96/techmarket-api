@@ -31,7 +31,7 @@ class BannerSeeder extends Seeder
             [
                 'title' => 'Holiday Sale',
                 'description' => 'Up to 50% off on selected items',
-                'image' => 'http://127.0.0.1:8000/storage/products/banner3.jpg',
+                'image' => '127.0.0.1:8000/storage/products/banner3.webp',
                 'url' => '/sale',
                 'button_text' => 'Shop Sale',
                 'order' => 3,

@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignId('product_variant_id')->nullable()->constrained();
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
-            $table->decimal('discount', 10, 2)->default(0)->nullable();
+            $table->decimal('discount', 10, 2)->default(0);
             $table->json('options')->nullable();
             $table->timestamps();
         });

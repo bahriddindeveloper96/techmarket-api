@@ -145,132 +145,103 @@ class OrderController extends Controller
     //     }
     // }
     public function store(Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'delivery_method_id' => 'required|exists:delivery_methods,id',
-                'payment_method_id' => 'required|exists:payment_methods,id',
-                'delivery_name' => 'nullable|string|max:255',
-                'delivery_phone' => 'nullable|string|max:255',
-                'delivery_region' => 'nullable|string|max:255',
-                'delivery_district' => 'nullable|string|max:255',
-                'delivery_address' => 'required|string',
-                'delivery_comment' => 'nullable|string',
-                'desired_delivery_date' => 'nullable|date',
-                'items' => 'required|array|min:1',
-                'items.*.product_id' => 'required|exists:products,id',
-                'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
-                'items.*.quantity' => 'required|integer|min:1',
-            ]);
+{
+    try {
+        $validated = $request->validate([
+            'delivery_method_id' => 'required|exists:delivery_methods,id',
+            'payment_method_id' => 'required|exists:payment_methods,id',
+            'delivery_name' => 'nullable|string|max:255',
+            'delivery_phone' => 'nullable|string|max:255',
+            'delivery_region' => 'nullable|string|max:255',
+            'delivery_district' => 'nullable|string|max:255',
+            'delivery_address' => 'required|string',
+            'delivery_comment' => 'nullable|string',
+            'desired_delivery_date' => 'nullable|date',
+            'items' => 'required|array|min:1',
+            'items.*.product_variant_id' => 'required|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
 
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            // Get authenticated user
-            $user = Auth::user();
-            $userTranslation = $user->translations()
-                ->where('locale', app()->getLocale())
-                ->first();
+        // Get authenticated user
+        $user = Auth::user();
+        $userTranslation = $user->translations()
+            ->where('locale', app()->getLocale())
+            ->first();
 
-            // Create order
-            $order = new Order();
-            $order->user_id = $user->id;
-            $order->delivery_method_id = $validated['delivery_method_id'];
-            $order->payment_method_id = $validated['payment_method_id'];
-            $order->delivery_name = $validated['delivery_name'] ?? $userTranslation?->name ?? $user->email;
-            $order->delivery_phone = $validated['delivery_phone'] ?? $user->phone;
-            $order->delivery_region = $validated['delivery_region'] ?? '';
-            $order->delivery_district = $validated['delivery_district'] ?? '';
-            $order->delivery_address = $validated['delivery_address'];
-            $order->delivery_comment = $validated['delivery_comment'] ?? null;
-            $order->desired_delivery_date = $validated['desired_delivery_date'] ?? null;
-            $order->status = 'new';
-            $order->payment_status = 'pending';
-            $order->total_amount = 0;
-            $order->total_discount = 0;
+        // Create order
+        $order = new Order();
+        $order->user_id = $user->id;
+        $order->delivery_method_id = $validated['delivery_method_id'];
+        $order->payment_method_id = $validated['payment_method_id'];
+        $order->delivery_name = $validated['delivery_name'] ?? $userTranslation?->name ?? $user->email;
+        $order->delivery_phone = $validated['delivery_phone'] ?? $user->phone;
+        $order->delivery_region = $validated['delivery_region'] ?? '';
+        $order->delivery_district = $validated['delivery_district'] ?? '';
+        $order->delivery_address = $validated['delivery_address'];
+        $order->delivery_comment = $validated['delivery_comment'] ?? null;
+        $order->desired_delivery_date = $validated['desired_delivery_date'] ?? null;
+        $order->status = 'new';
+        $order->payment_status = 'pending';
+        $order->total_amount = 0;
+        $order->total_discount = 0;
 
-            // Calculate delivery cost
-            $deliveryMethod = DeliveryMethod::findOrFail($validated['delivery_method_id']);
-            $order->delivery_cost = $deliveryMethod->base_cost;
+        // Calculate delivery cost
+        $deliveryMethod = DeliveryMethod::findOrFail($validated['delivery_method_id']);
+        $order->delivery_cost = $deliveryMethod->base_cost;
 
-            // Save order to get ID
-            $order->save();
+        // Save order to get ID
+        $order->save();
 
-            $totalAmount = 0;
-            $totalDiscount = 0;
+        $totalAmount = 0;
+        $totalDiscount = 0;
 
-            // Create order items
-            foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                if (!$product->active) {
-                    DB::rollBack();
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => "Product {$product->id} is not active"
-                    ], 400);
-                }
+        // Create order items
+        foreach ($validated['items'] as $item) {
+            $productVariant = ProductVariant::findOrFail($item['product_variant_id']);
+            $product = $productVariant->product; // Get the associated product
 
-                // Retrieve product variant
-                $productVariant = isset($item['product_variant_id'])
-                    ? ProductVariant::findOrFail($item['product_variant_id'])
-                    : $product->variants()->first();
-
-                if (!$productVariant) {
-                    DB::rollBack();
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => "Product {$product->id} has no available variants"
-                    ], 400);
-                }
-
-                $price = $productVariant->price ?? $product->price;
-                $discount = $productVariant->discount ?? $product->discount;
-
-                $orderItem = $order->items()->create([
-                    'product_id' => $product->id,
-                    'product_variant_id' => $productVariant->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $price,
-                    'discount' => $discount
-                ]);
-
-                $totalAmount += $price * $item['quantity'];
-                $totalDiscount += $discount * $item['quantity'];
+            if (!$product->active) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Product {$product->id} is not active"
+                ], 400);
             }
 
-            // Update order totals
-            $order->total_amount = $totalAmount;
-            $order->total_discount = $totalDiscount;
-            $order->save();
+            $price = $productVariant->price; // Use the price from the product variant
+            $discount = $productVariant->discount; // Use the discount from the product variant
 
-            DB::commit();
+            $orderItem = $order->items()->create([
+                'product_id' => $product->id, // Store the product ID for reference
+                'product_variant_id' => $productVariant->id, // Store the product variant ID
+                'quantity' => $item['quantity'],
+                'price' => $price,
+                'discount' => $discount
+            ]);
 
-            // Load relationships for response
-            $order->load(['items.product.translations', 'items.productVariant', 'deliveryMethod.translations', 'paymentMethod.translations']);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Order created successfully',
-                'data' => $order
-            ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to create order: ' . $e->getMessage()
-            ], 500);
+            $totalAmount += $price * $item['quantity'];
+            $totalDiscount += $discount * $item['quantity'];
         }
-    }
-    public function productVariant()
-    {
-        return $this->belongsTo(ProductVariant::class);
-    }
 
+        // Update order totals
+        $order->total_amount = $totalAmount;
+        $order->total_discount = $totalDiscount;
+        $order->save();
+
+        DB::commit();
+
+        // Load relationships for response
+        $order->load(['items.product.translations', 'items.productVariant', 'deliveryMethod.translations', 'paymentMethod.translations']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Order created successfully',
+            'data' => $order
+        ]);
+    },
+}
 
     public function show($id): JsonResponse
     {

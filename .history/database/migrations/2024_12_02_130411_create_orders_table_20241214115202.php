@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->foreignId('delivery_method_id')->constrained();
             $table->foreignId('payment_method_id')->constrained();
-
+            
             // Delivery info
             $table->string('delivery_name');
             $table->string('delivery_phone');
@@ -24,17 +24,17 @@ return new class extends Migration
             $table->text('delivery_comment')->nullable();
             $table->decimal('delivery_cost', 10, 2)->default(0);
             $table->timestamp('desired_delivery_date')->nullable();
-
+            
             // Payment info
             $table->string('payment_status')->default('pending');
             $table->decimal('total_amount', 10, 2);
-            $table->decimal('total_discount', 10, 2)->default(0)->nullable();
+            $table->decimal('total_discount', 10, 2)->default(0);
             $table->json('payment_details')->nullable();
-
+            
             // Order status
             $table->string('status')->default('new');
             $table->json('status_history')->nullable();
-
+            
             $table->timestamps();
             $table->softDeletes();
         });
@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignId('product_variant_id')->nullable()->constrained();
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
-            $table->decimal('discount', 10, 2)->default(0)->nullable();
+            $table->decimal('discount', 10, 2)->default(0);
             $table->json('options')->nullable();
             $table->timestamps();
         });

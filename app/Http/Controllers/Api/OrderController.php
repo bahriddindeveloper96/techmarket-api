@@ -167,16 +167,13 @@ class OrderController extends Controller
 
             // Get authenticated user
             $user = Auth::user();
-            $userTranslation = $user->translations()
-                ->where('locale', app()->getLocale())
-                ->first();
 
             // Create order
             $order = new Order();
             $order->user_id = $user->id;
             $order->delivery_method_id = $validated['delivery_method_id'];
             $order->payment_method_id = $validated['payment_method_id'];
-            $order->delivery_name = $validated['delivery_name'] ?? $userTranslation?->name ?? $user->email;
+            $order->delivery_name = $validated['delivery_name'] ?? $user->name;
             $order->delivery_phone = $validated['delivery_phone'] ?? $user->phone;
             $order->delivery_region = $validated['delivery_region'] ?? '';
             $order->delivery_district = $validated['delivery_district'] ?? '';

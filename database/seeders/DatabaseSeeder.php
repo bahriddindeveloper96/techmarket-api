@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             FavoriteSeeder::class,
             DeliveryMethodSeeder::class,
             PaymentMethodSeeder::class,
+            ProductReviewSeeder::class,
            // StaticUserSeeder::class
         ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductReview;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class ProductReviewController extends Controller
     public function index(Product $product)
     {
         $reviews = $product->reviews()
-            ->with(['translations', 'user.translations'])
+            ->with(['user'])
             ->where('is_approved', true)
             ->latest()
             ->paginate(10);
@@ -28,29 +29,44 @@ class ProductReviewController extends Controller
      */
     public function store(Request $request, Product $product)
     {
+        $user = auth()->user();
+        
+        // Check if user has ordered this product
+        $hasOrdered = OrderItem::whereHas('order', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                  ->where('status', 'completed');
+        })->where('product_id', $product->id)->exists();
+        
+        if (!$hasOrdered) {
+            return response()->json([
+                'message' => 'You can only review products that you have purchased'
+            ], 403);
+        }
+
+        // Check if user has already reviewed this product
+        $hasReviewed = $product->reviews()->where('user_id', $user->id)->exists();
+        
+        if ($hasReviewed) {
+            return response()->json([
+                'message' => 'You have already reviewed this product'
+            ], 403);
+        }
+
         $request->validate([
             'rating' => 'required|integer|between:1,5',
-            'translations' => 'required|array',
-            'translations.*.comment' => 'required|string|max:1000',
+            'comment' => 'required|string|max:1000',
         ]);
 
         $review = $product->reviews()->create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'rating' => $request->rating,
+            'comment' => $request->comment,
             'is_approved' => false
         ]);
 
-        // Create translations
-        foreach ($request->translations as $locale => $data) {
-            $review->translations()->create([
-                'locale' => $locale,
-                'comment' => $data['comment']
-            ]);
-        }
-
         return response()->json([
             'message' => 'Review added successfully',
-            'review' => $review->load(['user.translations', 'translations'])
+            'review' => $review->load(['user'])
         ], 201);
     }
 
@@ -63,22 +79,17 @@ class ProductReviewController extends Controller
 
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|min:3',
-            'locale' => 'required|string|size:2'
+            'comment' => 'required|string|min:3'
         ]);
 
         $review->update([
-            'rating' => $request->rating
+            'rating' => $request->rating,
+            'comment' => $request->comment
         ]);
-
-        $review->translations()->updateOrCreate(
-            ['locale' => $request->locale],
-            ['comment' => $request->comment]
-        );
 
         return response()->json([
             'message' => 'Review updated successfully',
-            'review' => $review->fresh()->load(['user.translations', 'translations'])
+            'review' => $review->fresh()->load(['user'])
         ]);
     }
 

@@ -1,0 +1,571 @@
+{
+	"info": {
+		"_postman_id": "seller-api-collection",
+		"name": "TechMarket Seller API",
+		"description": "TechMarket seller API endpoints collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register Seller",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\": \"Professional\",\n    \"lastname\": \"Seller\",\n    \"email\": \"pro.seller@example.com\",\n    \"phone\": \"+998907654321\",\n    \"password\": \"ProSeller2024!\",\n    \"password_confirmation\": \"ProSeller2024!\",\n    \"role\": \"seller\",\n    \"address\": \"456 Business Avenue, Tashkent, Uzbekistan\",\n    \"bio\": \"Professional seller with 5 years of experience in electronics and gadgets. Specializing in mobile phones and accessories.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/seller/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new seller account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Seller",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"pro.seller@example.com\",\n    \"password\": \"ProSeller2024!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/seller/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with seller credentials"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout Seller",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout seller and invalidate token"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Seller Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get current seller profile information"
+					},
+					"response": []
+				}
+			],
+			"description": "Seller authentication endpoints"
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"products"
+							]
+						},
+						"description": "Get list of seller's products"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New Product\",\n    \"description\": \"Product description\",\n    \"price\": 99.99,\n    \"category_id\": 1,\n    \"stock\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/seller/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"products"
+							]
+						},
+						"description": "Create a new product"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Product\",\n    \"description\": \"Updated description\",\n    \"price\": 149.99,\n    \"category_id\": 1,\n    \"stock\": 150\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/seller/products/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Update existing product"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/products/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Delete a product"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Variant Stock",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"stock\": 50\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/seller/products/:productId/variants/:variantId/stock",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"products",
+								":productId",
+								"variants",
+								":variantId",
+								"stock"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "1"
+								},
+								{
+									"key": "variantId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Update product variant stock"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Variant Price",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 199.99\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/seller/products/:productId/variants/:variantId/price",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"products",
+								":productId",
+								"variants",
+								":variantId",
+								"price"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "1"
+								},
+								{
+									"key": "variantId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Update product variant price"
+					},
+					"response": []
+				}
+			],
+			"description": "Product management endpoints"
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "List Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"orders"
+							]
+						},
+						"description": "Get list of orders"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/orders/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Get order details"
+					},
+					"response": []
+				}
+			],
+			"description": "Order management endpoints"
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"categories"
+							]
+						},
+						"description": "Get list of categories"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{seller_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/seller/categories/:id/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"seller",
+								"categories",
+								":id",
+								"products"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Get products in category"
+					},
+					"response": []
+				}
+			],
+			"description": "Category management endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "seller_token",
+			"value": "your_seller_token_here",
+			"type": "string"
+		}
+	]
+}

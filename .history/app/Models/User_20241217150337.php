@@ -54,13 +54,9 @@ class User extends Authenticatable
 
     protected $appends = ['name'];
 
-    /**
-     * Get the user's full name.
-     */
-    public function getNameAttribute(): string
-    {
-        return trim("{$this->firstname} {$this->lastname}");
-    }
+
+
+
 
     public function reviews()
     {

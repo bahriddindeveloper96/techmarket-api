@@ -22,27 +22,27 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'translations' => ['required', 'array'],
-            'translations.uz' => ['required', 'array'],
-            'translations.uz.name' => ['required', 'string', 'max:255'],
-            'translations.ru' => ['required', 'array'],
-            'translations.ru.name' => ['required', 'string', 'max:255'],
-            'translations.en' => ['required', 'array'],
-            'translations.en.name' => ['required', 'string', 'max:255'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['required', 'string', 'max:20', 'unique:users'],
+            'role' => ['sometimes', 'string', 'in:user,seller'],
+            'bio' => ['sometimes', 'string', 'max:1000'],
+            'address' => ['required_if:role,seller', 'string', 'max:255']
         ];
     }
 
     public function messages(): array
     {
         return [
-            'translations.required' => 'Translations are required',
-            'translations.*.required' => 'Translation for this language is required',
-            'translations.*.name.required' => 'Name is required for this language',
-            'translations.*.name.string' => 'Name must be a string',
-            'translations.*.name.max' => 'Name may not be greater than 255 characters',
+            'firstname.required' => 'First name is required',
+            'firstname.string' => 'First name must be a string',
+            'firstname.max' => 'First name may not be greater than 255 characters',
+            
+            'lastname.required' => 'Last name is required',
+            'lastname.string' => 'Last name must be a string',
+            'lastname.max' => 'Last name may not be greater than 255 characters',
             
             'email.required' => __('auth.validation.email.required'),
             'email.email' => __('auth.validation.email.email'),
@@ -56,6 +56,13 @@ class RegisterRequest extends FormRequest
             'phone.required' => __('auth.validation.phone.required'),
             'phone.unique' => __('auth.validation.phone.unique'),
             'phone.max' => __('auth.validation.phone.max'),
+            
+            'address.required_if' => 'Address is required for sellers',
+            'address.string' => 'Address must be a string',
+            'address.max' => 'Address may not be greater than 255 characters',
+
+            'bio.string' => 'Bio must be a string',
+            'bio.max' => 'Bio may not be greater than 1000 characters',
         ];
     }
 }

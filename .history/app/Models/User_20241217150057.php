@@ -23,7 +23,6 @@ class User extends Authenticatable
         'firstname',
         'lastname',
         'bio',
-        'address',
         'email',
         'password',
         'phone',
@@ -51,15 +50,19 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $with = ['translations'];
 
     protected $appends = ['name'];
 
-    /**
-     * Get the user's full name.
-     */
-    public function getNameAttribute(): string
+    public function translations()
     {
-        return trim("{$this->firstname} {$this->lastname}");
+        return $this->hasMany(UserTranslation::class);
+    }
+
+    public function getNameAttribute()
+    {
+        $translation = $this->translations->where('locale', app()->getLocale())->first();
+        return $translation ? $translation->name : null;
     }
 
     public function reviews()

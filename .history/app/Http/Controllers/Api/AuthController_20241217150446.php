@@ -24,16 +24,18 @@ class AuthController extends Controller
             DB::beginTransaction();
 
             $user = User::create([
-                'firstname' => $request->firstname,
-                'lastname' => $request->lastname,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password),
-                'role' => $request->role ?? 'user',
-                'status' => 'active',
-                'bio' => $request->bio,
-                'address' => $request->address
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'phone' => $validated['phone']
             ]);
+
+            // Create translations for all supported languages
+            foreach ($validated['translations'] as $locale => $translation) {
+                $user->translations()->create([
+                    'locale' => $locale,
+                    'name' => $translation['name']
+                ]);
+            }
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -43,7 +45,7 @@ class AuthController extends Controller
                 'status' => 'success',
                 'message' => __('auth.register_success'),
                 'data' => [
-                    'user' => $user,
+                    'user' => $user->load('translations'),
                     'token' => $token
                 ]
             ], 201);
@@ -133,11 +135,21 @@ class AuthController extends Controller
             'status' => 'active'
         ]);
 
+        // Tarjimalarni saqlash
+        // foreach ($request->translations as $translation) {
+        //     UserTranslation::create([
+        //         'user_id' => $user->id,
+        //         'locale' => $translation['locale'],
+        //         'name' => $translation['name']
+        //     ]);
+        // }
+
         // Token yaratish
         $token = $user->createToken('static_api_token', ['*'])->plainTextToken;
 
         return response()->json([
             'user' => $user,
+            'translations' => $user->translations,
             'token' => $token,
             'message' => 'Static token user created successfully'
         ], 201);

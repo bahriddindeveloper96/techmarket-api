@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_review_translations', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_review_id')->constrained()->onDelete('cascade');
-            $table->string('locale');
-            $table->text('comment');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->string('phone')->nullable();
+            $table->enum('role', ['admin', 'user', 'seller'])->default('user');
+            $table->rememberToken();
             $table->timestamps();
-
-            $table->unique(['product_review_id', 'locale']);
         });
     }
 
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_review_translations');
+        Schema::dropIfExists('users');
     }
 };

@@ -12,6 +12,41 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     /**
+     * Register a new seller
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'bio' => 'nullable|string|max:1000'
+        ]);
+
+        $user = User::create([
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'role' => 'seller',
+            'address' => $request->address,
+            'bio' => $request->bio
+        ]);
+
+        return response()->json([
+            'token' => $user->createToken('seller-token')->plainTextToken,
+            'user' => $user,
+        ], 201);
+    }
+
+    /**
      * Login admin user
      *
      * @param Request $request

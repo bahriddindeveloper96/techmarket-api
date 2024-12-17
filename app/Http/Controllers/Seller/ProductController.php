@@ -18,7 +18,9 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query()->with(['category', 'variants']);
+        $query = Product::query()
+            ->where('user_id', auth()->id())
+            ->with(['category', 'variants']);
 
         // Search by name
         if ($request->has('search')) {

@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Name column already removed in initial users table migration
+        Schema::table('users', function (Blueprint $table) {
+            $table->enum('status', ['active', 'inactive'])->default('active');
+        });
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // No need to add name column back
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('status');
+        });
     }
 };

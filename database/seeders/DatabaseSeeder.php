@@ -13,15 +13,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminSeeder::class,
+            StaticUserTokenSeeder::class,
             AttributeSeeder::class,
-           // UserSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
             BannerSeeder::class,
             FavoriteSeeder::class,
             DeliveryMethodSeeder::class,
             PaymentMethodSeeder::class,
-            StaticUserSeeder::class
+           // StaticUserSeeder::class
         ]);
     }
 }

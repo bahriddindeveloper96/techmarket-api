@@ -56,7 +56,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 999.99,
                         'stock' => 50,
-                        'images' => ['http://127.0.0.1:8000/storage/products/1.webp', 'http://127.0.0.1:8000/storage/products/2.webp'] // Variant images
+                        'images' => ['https://eragon.uz/storage/products/1.webp', 'https://eragon.uz/storage/products/2.webp'] // Variant images
                     ],
                     [
                         'attribute_values' => [
@@ -66,7 +66,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1099.99,
                         'stock' => 30,
-                        'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                        'images' => ['https://eragon.uz/storage/products/3.webp', 'https://eragon.uz/storage/products/1.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -76,7 +76,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1299.99,
                         'stock' => 20,
-                        'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                        'images' => ['https://eragon.uz/storage/products/3.webp', 'https://eragon.uz/storage/products/1.webp']
                     ]
                 ]
             ],
@@ -124,7 +124,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1299.99,
                         'stock' => 40,
-                        'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
+                        'images' => ['https://eragon.uz/storage/products/2.webp', 'https://eragon.uz/storage/products/3.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -134,7 +134,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1399.99,
                         'stock' => 25,
-                        'images' => ['http://127.0.0.1:8000/storage/products/1.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
+                        'images' => ['https://eragon.uz/storage/products/1.webp', 'https://eragon.uz/storage/products/3.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -144,7 +144,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1599.99,
                         'stock' => 15,
-                        'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                        'images' => ['https://eragon.uz/storage/products/2.webp', 'https://eragon.uz/storage/products/1.webp']
                     ]
                 ]
             ],
@@ -186,7 +186,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 2499.99,
                         'stock' => 20,
-                        'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                        'images' => ['https://eragon.uz/storage/products/3.webp', 'https://eragon.uz/storage/products/1.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -196,7 +196,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 2999.99,
                         'stock' => 15,
-                        'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
+                        'images' => ['https://eragon.uz/storage/products/2.webp', 'https://eragon.uz/storage/products/3.webp']
                     ]
                 ]
                     ],
@@ -244,7 +244,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 999.99,
                                 'stock' => 50,
-                                'images' => ['http://127.0.0.1:8000/storage/products/1.webp', 'http://127.0.0.1:8000/storage/products/2.webp'] // Variant images
+                                'images' => ['https://eragon.uz/storage/products/1.webp', 'https://eragon.uz/storage/products/2.webp'] // Variant images
                             ],
                             [
                                 'attribute_values' => [
@@ -254,7 +254,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 1099.99,
                                 'stock' => 30,
-                                'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                                'images' => ['https://eragon.uz/storage/products/3.webp', 'https://eragon.uz/storage/products/1.webp']
                             ],
                             [
                                 'attribute_values' => [
@@ -264,7 +264,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 1299.99,
                                 'stock' => 20,
-                                'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                                'images' => ['https://eragon.uz/storage/products/3.webp', 'https://eragon.uz/storage/products/1.webp']
                             ]
                         ]
                     ],
@@ -312,7 +312,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 1299.99,
                                 'stock' => 40,
-                                'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
+                                'images' => ['https://eragon.uz/storage/products/2.webp', 'https://eragon.uz/storage/products/3.webp']
                             ],
                             [
                                 'attribute_values' => [
@@ -322,7 +322,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 1399.99,
                                 'stock' => 25,
-                                'images' => ['http://127.0.0.1:8000/storage/products/1.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
+                                'images' => ['https://eragon.uz/storage/products/1.webp', 'https://eragon.uz/storage/products/3.webp']
                             ],
                             [
                                 'attribute_values' => [
@@ -332,7 +332,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 1599.99,
                                 'stock' => 15,
-                                'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                                'images' => ['https://eragon.uz/storage/products/2.webp', 'https://eragon.uz/storage/products/1.webp']
                             ]
                         ]
                     ],
@@ -374,7 +374,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 2499.99,
                                 'stock' => 20,
-                                'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
+                                'images' => ['https://eragon.uz/storage/products/3.webp', 'https://eragon.uz/storage/products/1.webp']
                             ],
                             [
                                 'attribute_values' => [
@@ -384,7 +384,7 @@ class ProductSeeder extends Seeder
                                 ],
                                 'price' => 2999.99,
                                 'stock' => 15,
-                                'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
+                                'images' => ['https://eragon.uz/storage/products/2.webp', 'https://eragon.uz/storage/products/3.webp']
                             ]
                         ]
                     ]

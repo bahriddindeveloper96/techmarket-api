@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DeliveryMethodController;
 use App\Http\Controllers\Admin\FileController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\HomeController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->group(function () {
@@ -68,6 +69,10 @@ Route::prefix('admin')->group(function () {
         // // Attributes management
         // Route::apiResource('attributes', AttributeController::class);
         // Route::post('attributes/reorder', [AttributeController::class, 'reorder']);
+
+        // Homepage
+        Route::get('/homepage', [HomeController::class, 'index']);
+        Route::post('/homepage', [HomeController::class, 'update']);
 
         // Delivery methods
         Route::apiResource('delivery-methods', DeliveryMethodController::class);

@@ -17,49 +17,7 @@ use Illuminate\Http\Request;
  */
 class HomeController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/api/homepage",
-     *     summary="Get homepage data",
-     *     tags={"Homepage"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="banners",
-     *                     type="array",
-     *                     @OA\Items(type="object")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="categories",
-     *                     type="array",
-     *                     @OA\Items(type="object")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="featured_products",
-     *                     type="array",
-     *                     @OA\Items(type="object")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="new_products",
-     *                     type="array",
-     *                     @OA\Items(type="object")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="popular_products",
-     *                     type="array",
-     *                     @OA\Items(type="object")
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     */
+    
     public function index()
     {
         // Get active banners ordered by order field

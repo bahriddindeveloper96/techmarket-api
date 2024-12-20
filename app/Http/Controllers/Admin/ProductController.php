@@ -285,16 +285,38 @@ class ProductController extends Controller
             }
 
             // Update variants
-            $product->variants()->delete(); // Delete old variants
-            foreach ($request->variants as $variantData) {
-                $product->variants()->create([
-                    'attribute_values' => $variantData['attribute_values'],
-                    'price' => $variantData['price'],
-                    'stock' => $variantData['stock'],
-                    'active' => true,
-                    'images' => $variantData['images'] ?? [],
-                    'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
-                ]);
+            if ($request->has('variants')) {
+                foreach ($request->variants as $variantData) {
+                    // Existing variant bo'lsa update qilish
+                    $variant = $product->variants()
+                        ->where('attribute_values', json_encode($variantData['attribute_values']))
+                        ->first();
+                    
+                    if ($variant) {
+                        $variant->update([
+                            'price' => $variantData['price'],
+                            'stock' => $variantData['stock'],
+                            'active' => true,
+                            'images' => $variantData['images'] ?? [],
+                            'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
+                        ]);
+                    } else {
+                        // Yangi variant yaratish
+                        $product->variants()->create([
+                            'attribute_values' => $variantData['attribute_values'],
+                            'price' => $variantData['price'],
+                            'stock' => $variantData['stock'],
+                            'active' => true,
+                            'images' => $variantData['images'] ?? [],
+                            'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
+                        ]);
+                    }
+                }
+                
+                // Eski, ishlatilmagan variantlarni deactivate qilish
+                $product->variants()
+                    ->whereNotIn('attribute_values', collect($request->variants)->pluck('attribute_values')->map(fn($av) => json_encode($av)))
+                    ->update(['active' => false]);
             }
 
             DB::commit();
@@ -442,6 +464,302 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * Get all variants of a product
+     */
+    public function getVariants($productId)
+    {
+        try {
+            $product = Product::with(['variants' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }])->findOrFail($productId);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'product_id' => $product->id,
+                    'product_name' => $product->translations->where('locale', 'en')->first()->name,
+                    'variants' => $product->variants->map(function($variant) {
+                        return [
+                            'id' => $variant->id,
+                            'sku' => $variant->sku,
+                            'price' => $variant->price,
+                            'stock' => $variant->stock,
+                            'active' => $variant->active,
+                            'attribute_values' => $variant->attribute_values,
+                            'images' => $variant->images,
+                            'created_at' => $variant->created_at,
+                            'updated_at' => $variant->updated_at
+                        ];
+                    })
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving product variants: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get specific variant of a product
+     */
+    public function getVariant($productId, $variantId)
+    {
+        try {
+            $product = Product::findOrFail($productId);
+            
+            $variant = $product->variants()
+                ->where('id', $variantId)
+                ->firstOrFail();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'product_id' => $product->id,
+                    'product_name' => $product->translations->where('locale', 'en')->first()->name,
+                    'variant' => [
+                        'id' => $variant->id,
+                        'sku' => $variant->sku,
+                        'price' => $variant->price,
+                        'stock' => $variant->stock,
+                        'active' => $variant->active,
+                        'attribute_values' => $variant->attribute_values,
+                        'images' => $variant->images,
+                        'created_at' => $variant->created_at,
+                        'updated_at' => $variant->updated_at
+                    ]
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product or variant not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving variant: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add new variant to product
+     */
+    public function addVariant(Request $request, $productId)
+    {
+        $validator = Validator::make($request->all(), [
+            'attribute_values' => 'required|array',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'images' => 'nullable|array',
+            'active' => 'boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $product = Product::findOrFail($productId);
+
+            // Check if variant with same attributes exists
+            $existingVariant = $product->variants()
+                ->where('attribute_values', json_encode($request->attribute_values))
+                ->first();
+
+            if ($existingVariant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Variant with these attributes already exists'
+                ], 422);
+            }
+
+            // Create new variant
+            $variant = $product->variants()->create([
+                'attribute_values' => $request->attribute_values,
+                'price' => $request->price,
+                'stock' => $request->stock,
+                'active' => $request->input('active', true),
+                'images' => $request->input('images', []),
+                'sku' => strtoupper(Str::slug($product->translations->where('locale', 'en')->first()->name)) 
+                    . '-' . strtoupper(Str::random(4))
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Variant added successfully',
+                'data' => [
+                    'id' => $variant->id,
+                    'sku' => $variant->sku,
+                    'price' => $variant->price,
+                    'stock' => $variant->stock,
+                    'active' => $variant->active,
+                    'attribute_values' => $variant->attribute_values,
+                    'images' => $variant->images,
+                    'created_at' => $variant->created_at,
+                    'updated_at' => $variant->updated_at
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error adding variant: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update specific variant of a product
+     */
+    public function updateVariant(Request $request, $productId, $variantId)
+    {
+        $validator = Validator::make($request->all(), [
+            'attribute_values' => 'array',
+            'price' => 'numeric|min:0',
+            'stock' => 'integer|min:0',
+            'images' => 'nullable|array',
+            'active' => 'boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $product = Product::findOrFail($productId);
+            
+            $variant = $product->variants()
+                ->where('id', $variantId)
+                ->firstOrFail();
+
+            // Check if attribute values are being updated and if they would conflict
+            if ($request->has('attribute_values')) {
+                $existingVariant = $product->variants()
+                    ->where('id', '!=', $variantId)
+                    ->where('attribute_values', json_encode($request->attribute_values))
+                    ->first();
+
+                if ($existingVariant) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Another variant with these attributes already exists'
+                    ], 422);
+                }
+            }
+
+            // Update variant
+            $updateData = [];
+            
+            if ($request->has('attribute_values')) {
+                $updateData['attribute_values'] = $request->attribute_values;
+            }
+            if ($request->has('price')) {
+                $updateData['price'] = $request->price;
+            }
+            if ($request->has('stock')) {
+                $updateData['stock'] = $request->stock;
+            }
+            if ($request->has('images')) {
+                $updateData['images'] = $request->images;
+            }
+            if ($request->has('active')) {
+                $updateData['active'] = $request->active;
+            }
+
+            $variant->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Variant updated successfully',
+                'data' => [
+                    'product_id' => $product->id,
+                    'product_name' => $product->translations->where('locale', 'en')->first()->name,
+                    'variant' => [
+                        'id' => $variant->id,
+                        'sku' => $variant->sku,
+                        'price' => $variant->price,
+                        'stock' => $variant->stock,
+                        'active' => $variant->active,
+                        'attribute_values' => $variant->attribute_values,
+                        'images' => $variant->images,
+                        'created_at' => $variant->created_at,
+                        'updated_at' => $variant->updated_at
+                    ]
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product or variant not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating variant: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete specific variant of a product
+     */
+    public function deleteVariant($productId, $variantId)
+    {
+        try {
+            $product = Product::findOrFail($productId);
+            
+            $variant = $product->variants()
+                ->where('id', $variantId)
+                ->firstOrFail();
+
+            // Check if variant is used in any orders
+            $isUsedInOrders = \App\Models\OrderItem::where('product_variant_id', $variantId)->exists();
+            
+            if ($isUsedInOrders) {
+                // Instead of deleting, just deactivate the variant
+                $variant->update(['active' => false]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Variant has been deactivated because it is used in orders',
+                    'data' => [
+                        'id' => $variant->id,
+                        'active' => false
+                    ]
+                ]);
+            }
+
+            // If not used in orders, delete it
+            $variant->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Variant deleted successfully'
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product or variant not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting variant: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // public function purchaseHistory()
     // {
     //     $products = auth()->user()->orders()
@@ -457,6 +775,4 @@ class ProductController extends Controller
     //         'products' => $products
     //     ]);
     // }
-
-
 }

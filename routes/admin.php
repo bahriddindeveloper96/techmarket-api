@@ -39,6 +39,11 @@ Route::prefix('admin')->group(function () {
         Route::post('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
         Route::post('products/bulk-delete', [ProductController::class, 'bulkDelete']);
         Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate']);
+        Route::get('products/{product}/variants', [ProductController::class, 'getVariants']);
+        Route::post('products/{product}/variants', [ProductController::class, 'addVariant']);
+        Route::get('products/{product}/variants/{variant}', [ProductController::class, 'getVariant']);
+        Route::put('products/{product}/variants/{variant}', [ProductController::class, 'updateVariant']);
+        Route::delete('products/{product}/variants/{variant}', [ProductController::class, 'deleteVariant']);
 
          // File uploads
         Route::post('/upload', [FileController::class, 'upload']);

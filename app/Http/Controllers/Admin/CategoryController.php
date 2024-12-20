@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\CategoryTranslation;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -60,56 +61,47 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::with('translations')->get();
-        return response()->json($categories);
+        // Faqat asosiy kategoriyalarni olamiz (parent_id = null)
+        $categories = Category::with(['translations', 'children.translations'])
+            ->whereNull('parent_id')
+            ->get()
+            ->map(function ($category) {
+                return $this->formatCategory($category);
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/admin/categories",
-     *     summary="Create a new category",
-     *     tags={"Categories"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="translations",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="en",
-     *                     type="object",
-     *                     @OA\Property(property="name", type="string", example="Category Name"),
-     *                     @OA\Property(property="description", type="string", example="Category Description")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="ru",
-     *                     type="object",
-     *                     @OA\Property(property="name", type="string", example="Название категории"),
-     *                     @OA\Property(property="description", type="string", example="Описание категории")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="uz",
-     *                     type="object",
-     *                     @OA\Property(property="name", type="string", example="Kategoriya nomi"),
-     *                     @OA\Property(property="description", type="string", example="Kategoriya tavsifi")
-     *                 )
-     *             ),
-     *             @OA\Property(property="active", type="boolean", example=true),
-     *             @OA\Property(property="parent_id", type="integer", nullable=true, example=2),
-     *             @OA\Property(property="images", type="array", @OA\Items(type="string"), example={"/storage/categories/image1.jpg", "/storage/categories/image2.jpg"})
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Category created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Category created successfully"),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     )
-     * )
+     * Kategoriyani formatlash uchun yordamchi metod
      */
+    private function formatCategory($category)
+    {
+        $formattedCategory = [
+            'id' => $category->id,
+            'slug' => $category->slug,
+            'active' => $category->active,
+            'featured' => $category->featured,
+            'order' => $category->order,
+            'image' => $category->image,
+            'translations' => $category->translations,
+            'created_at' => $category->created_at,
+            'updated_at' => $category->updated_at,
+        ];
+
+        // Agar kategoriyaning bolalari bo'lsa
+        if ($category->children && $category->children->count() > 0) {
+            $formattedCategory['children'] = $category->children->map(function ($child) {
+                return $this->formatCategory($child);
+            });
+        }
+
+        return $formattedCategory;
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -123,10 +115,11 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'images' => 'nullable|array',
-            'images.*' => 'string',
+            'parent_id' => 'nullable|exists:categories,id',
             'active' => 'boolean',
-            'parent_id' => 'nullable|exists:categories,id'
+            'image' => 'nullable|string',
+            'featured' => 'boolean',
+            'order' => 'nullable|integer'
         ]);
 
         if ($validator->fails()) {
@@ -139,24 +132,26 @@ class CategoryController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate unique slug
-            $baseSlug = Str::slug($request->input('translations.en.name'));
-            $slug = $baseSlug;
-            $counter = 1;
+            // Generate slug from English name
+            $slug = Str::slug($request->translations['en']['name']);
+            $originalSlug = $slug;
+            $count = 1;
 
+            // Ensure unique slug
             while (Category::where('slug', $slug)->exists()) {
-                $slug = $baseSlug . '-' . $counter;
-                $counter++;
+                $slug = $originalSlug . '-' . $count;
+                $count++;
             }
 
             // Create category
             $category = Category::create([
-                'image' => $request->images[0] ?? null, // Set first image as main image
-                'images' => json_encode($request->images ?? []), // Store all images as JSON
-                'parent_id' => $request->parent_id,
-                'active' => $request->input('active', true),
                 'slug' => $slug,
-                'user_id' => auth()->id() // Add authenticated user's ID
+                'parent_id' => $request->input('parent_id'),
+                'active' => $request->input('active', true),
+                'image' => $request->input('image'),
+                'featured' => $request->input('featured', false),
+                'order' => $request->input('order', 0),
+                'user_id' => auth()->id() // Autentifikatsiya qilingan foydalanuvchi ID'sini qo'shamiz
             ]);
 
             // Create translations
@@ -171,18 +166,20 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Load the category with translations
+            $category->load('translations');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Category created successfully',
-                'data' => $category->load('translations')
+                'data' => $category
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating category',
-                'error' => $e->getMessage()
+                'message' => 'Error creating category: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -233,9 +230,9 @@ class CategoryController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'translations' => 'required|array',
             'translations.en' => 'required|array',
             'translations.en.name' => 'required|string|max:255',
@@ -246,22 +243,48 @@ class CategoryController extends Controller
             'translations.uz' => 'required|array',
             'translations.uz.name' => 'required|string|max:255',
             'translations.uz.description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Bitta rasmni tekshirish
-            'active' => 'boolean'
+            'parent_id' => 'nullable|exists:categories,id',
+            'active' => 'boolean',
+            'image' => 'nullable|string',
+            'featured' => 'boolean',
+            'order' => 'nullable|integer'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         try {
             DB::beginTransaction();
 
-            // Update category
-            $imagePath = $category->image; // Keep the current image if no new one is uploaded
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
+            $category = Category::findOrFail($id);
+
+            // Check if English name is changed
+            if ($category->translations()->where('locale', 'en')->first()->name !== $request->translations['en']['name']) {
+                // Generate new slug from English name
+                $slug = Str::slug($request->translations['en']['name']);
+                $originalSlug = $slug;
+                $count = 1;
+
+                // Ensure unique slug
+                while (Category::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                    $slug = $originalSlug . '-' . $count;
+                    $count++;
+                }
+
+                $category->slug = $slug;
             }
+
+            // Update category
             $category->update([
-                'slug' => Str::slug($request->input('translations.en.name')),
-                'image' => $imagePath,
-                'active' => $request->input('active', true)
+                'parent_id' => $request->input('parent_id'),
+                'active' => $request->input('active', true),
+                'image' => $request->input('image'),
+                'featured' => $request->input('featured', false),
+                'order' => $request->input('order', 0)
             ]);
 
             // Update translations
@@ -277,16 +300,26 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            // Load the category with translations
+            $category->load('translations');
+
             return response()->json([
+                'success' => true,
                 'message' => 'Category updated successfully',
-                'data' => $category->load('translations')
+                'data' => $category
             ]);
 
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found'
+            ], 404);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Error updating category',
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => 'Error updating category: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -335,12 +368,201 @@ class CategoryController extends Controller
     }
 
     /**
-     * Kategoriya bo'yicha mahsulotlarni olish uchun method
+     * Get products of a specific category, its subcategories and parent categories
      */
-    public function products(Category $category)
+    public function products($categoryId)
     {
-        return response()->json([
-            'data' => $category->products()->with('translations')->get()
-        ]);
+        try {
+            $category = Category::findOrFail($categoryId);
+            
+            // Get all subcategory IDs including the current category
+            $categoryIds = [$categoryId];
+            $this->getSubcategoryIds($category, $categoryIds);
+
+            // Get parent category IDs
+            $this->getParentCategoryIds($category, $categoryIds);
+
+            // Get products from all these categories
+            $products = Product::with([
+                'translations', 
+                'category.translations', 
+                'variants.translations'
+            ])
+                ->whereIn('category_id', $categoryIds)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($product) {
+                    return [
+                        'id' => $product->id,
+                        'slug' => $product->slug,
+                        'category' => [
+                            'id' => $product->category->id,
+                            'name' => $product->category->translations->where('locale', app()->getLocale())->first()->name
+                        ],
+                        'translations' => $product->translations,
+                        'price' => $product->price,
+                        'old_price' => $product->old_price,
+                        'quantity' => $product->quantity,
+                        'active' => $product->active,
+                        'featured' => $product->featured,
+                        'views' => $product->views,
+                        'image' => $product->image,
+                        'images' => $product->images,
+                        'variants' => $product->variants->map(function ($variant) {
+                            return [
+                                'id' => $variant->id,
+                                'sku' => $variant->sku,
+                                'price' => $variant->price,
+                                'stock' => $variant->stock,
+                                'active' => $variant->active,
+                                'images' => $variant->images,
+                                'attribute_values' => $variant->attribute_values,
+                                'translations' => $variant->translations
+                            ];
+                        }),
+                        'variants_count' => $product->variants->count(),
+                        'created_at' => $product->created_at,
+                        'updated_at' => $product->updated_at
+                    ];
+                });
+
+            // Get breadcrumb data
+            $breadcrumbs = $this->getBreadcrumbs($category);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'category' => [
+                        'id' => $category->id,
+                        'slug' => $category->slug,
+                        'translations' => $category->translations
+                    ],
+                    'breadcrumbs' => $breadcrumbs,
+                    'products_count' => $products->count(),
+                    'products' => $products
+                ]
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving products: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Recursive function to get all subcategory IDs
+     */
+    private function getSubcategoryIds($category, &$ids)
+    {
+        $subcategories = Category::where('parent_id', $category->id)->get();
+        foreach ($subcategories as $subcategory) {
+            $ids[] = $subcategory->id;
+            $this->getSubcategoryIds($subcategory, $ids);
+        }
+    }
+
+    /**
+     * Recursive function to get all parent category IDs
+     */
+    private function getParentCategoryIds($category, &$ids)
+    {
+        if ($category->parent_id) {
+            $parentCategory = Category::find($category->parent_id);
+            if ($parentCategory) {
+                $ids[] = $parentCategory->id;
+                $this->getParentCategoryIds($parentCategory, $ids);
+            }
+        }
+    }
+
+    /**
+     * Get category breadcrumbs
+     */
+    private function getBreadcrumbs($category)
+    {
+        $breadcrumbs = [];
+        $current = $category;
+
+        // Add current category
+        $breadcrumbs[] = [
+            'id' => $current->id,
+            'slug' => $current->slug,
+            'name' => $current->translations->where('locale', app()->getLocale())->first()->name
+        ];
+
+        // Add parent categories
+        while ($current->parent_id) {
+            $current = Category::with('translations')->find($current->parent_id);
+            if ($current) {
+                array_unshift($breadcrumbs, [
+                    'id' => $current->id,
+                    'slug' => $current->slug,
+                    'name' => $current->translations->where('locale', app()->getLocale())->first()->name
+                ]);
+            }
+        }
+
+        return $breadcrumbs;
+    }
+
+    /**
+     * Get child categories of a specific category
+     */
+    public function childCategories($parentId)
+    {
+        try {
+            // Parent kategoriyani tekshirish
+            $parentCategory = Category::findOrFail($parentId);
+
+            // Child kategoriyalarni olish
+            $childCategories = Category::with(['translations'])
+                ->where('parent_id', $parentId)
+                ->orderBy('order')
+                ->get()
+                ->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'slug' => $category->slug,
+                        'active' => $category->active,
+                        'featured' => $category->featured,
+                        'order' => $category->order,
+                        'image' => $category->image,
+                        'translations' => $category->translations,
+                        'has_children' => $category->children()->count() > 0,
+                        'created_at' => $category->created_at,
+                        'updated_at' => $category->updated_at
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'parent_category' => [
+                        'id' => $parentCategory->id,
+                        'slug' => $parentCategory->slug,
+                        'translations' => $parentCategory->translations
+                    ],
+                    'child_categories' => $childCategories
+                ]
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parent category not found'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving child categories: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

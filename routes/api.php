@@ -47,8 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/homepage', [HomeController::class, 'index']);
 
     // Categories
-    Route::apiResource('categories', CategoryController::class);
-    Route::get('/categories/{category}/products', [CategoryController::class, 'products']);
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::get('categories/{category}', [CategoryController::class, 'show']);
+    Route::get('categories/{category}/products', [CategoryController::class, 'productsByCategoryId']);
 
     // Products
     Route::apiResource('products', ProductController::class);

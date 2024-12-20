@@ -52,6 +52,8 @@ Route::prefix('admin')->group(function () {
         // Categories management
         Route::apiResource('categories', CategoryController::class);
         Route::post('categories/reorder', [CategoryController::class, 'reorder']);
+        Route::get('categories/{category}/child-categories', [CategoryController::class, 'childCategories']);
+        Route::get('categories/{category}/products', [CategoryController::class, 'products']);
 
         // Orders management
         Route::apiResource('orders', OrderController::class);

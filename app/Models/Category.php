@@ -16,13 +16,15 @@ class Category extends Model
         'active',
         'parent_id',
         'user_id',
-        'order'
+        'order',
+        'featured'
     ];
 
     protected $casts = [
         'images' => 'array',
         'active' => 'boolean',
-        'order' => 'integer'
+        'order' => 'integer',
+        'featured' => 'boolean'
     ];
 
     protected $hidden = ['translations'];
@@ -41,6 +43,16 @@ class Category extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(CategoryTranslation::class);
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
     }
 
     public function getNameAttribute()

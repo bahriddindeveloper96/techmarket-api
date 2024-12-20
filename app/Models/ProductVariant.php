@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class ProductVariant extends Model
@@ -40,6 +41,11 @@ class ProductVariant extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function translations(): HasMany
+    {
+        return $this->hasMany(ProductVariantTranslation::class);
     }
 
     // Xususiyatlar kombinatsiyasi mavjudligini tekshirish

@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Attribute extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'attribute_group_id',
         'name',
@@ -34,5 +37,10 @@ class Attribute extends Model
         return $this->belongsToMany(Product::class, 'product_attributes')
             ->withPivot('value')
             ->withTimestamps();
+    }
+
+    public function translations()
+    {
+        return $this->hasMany(AttributeTranslation::class);
     }
 }

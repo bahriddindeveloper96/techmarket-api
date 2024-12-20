@@ -33,8 +33,15 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('users', AdminUserController::class);
         Route::post('users/{user}/toggle-active', [AdminUserController::class, 'toggleActive']);
 
+        // Categories management
+        Route::apiResource('categories', CategoryController::class);
+        Route::post('categories/reorder', [CategoryController::class, 'reorder']);
+        Route::get('categories/{category}/child-categories', [CategoryController::class, 'childCategories']);
+        Route::get('categories/{category}/products', [CategoryController::class, 'products']);
+
         // Products management
         Route::apiResource('products', ProductController::class);
+        Route::get('products/attributes/{category}', [ProductController::class, 'getAttributesByCategory']);
         Route::post('products/upload-images', [ProductController::class, 'uploadImages']);
         Route::post('products/{product}/toggle-active', [ProductController::class, 'toggleActive']);
         Route::post('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
@@ -49,12 +56,6 @@ Route::prefix('admin')->group(function () {
          // File uploads
         Route::post('/upload', [FileController::class, 'upload']);
         Route::post('/delete-file', [FileController::class, 'delete']);
-
-        // Categories management
-        Route::apiResource('categories', CategoryController::class);
-        Route::post('categories/reorder', [CategoryController::class, 'reorder']);
-        Route::get('categories/{category}/child-categories', [CategoryController::class, 'childCategories']);
-        Route::get('categories/{category}/products', [CategoryController::class, 'products']);
 
         // Orders management
         Route::apiResource('orders', OrderController::class);

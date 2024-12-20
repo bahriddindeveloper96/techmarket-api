@@ -4,8 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\CategoryTranslation;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\CategoryTranslation;
+use App\Models\Product;
+use App\Models\User;
+use App\Models\AttributeGroup;
 
 class Category extends Model
 {
@@ -35,6 +39,7 @@ class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -53,6 +58,13 @@ class Category extends Model
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function attributeGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(AttributeGroup::class, 'category_attribute_groups')
+            ->withPivot('attributes')
+            ->withTimestamps();
     }
 
     public function getNameAttribute()

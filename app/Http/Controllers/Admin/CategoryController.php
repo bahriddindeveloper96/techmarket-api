@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\AttributeGroup;
+use App\Models\Attribute;
 use App\Models\CategoryTranslation;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -104,188 +108,150 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'translations' => 'required|array',
-            'translations.en' => 'required|array',
-            'translations.en.name' => 'required|string|max:255',
-            'translations.en.description' => 'required|string',
-            'translations.ru' => 'required|array',
-            'translations.ru.name' => 'required|string|max:255',
-            'translations.ru.description' => 'required|string',
-            'translations.uz' => 'required|array',
-            'translations.uz.name' => 'required|string|max:255',
-            'translations.uz.description' => 'required|string',
+            'translations.*' => 'required|array',
+            'translations.*.name' => 'required|string',
+            'translations.*.description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
+            'image' => 'nullable|image|max:2048',
             'active' => 'boolean',
-            'image' => 'nullable|string',
             'featured' => 'boolean',
-            'order' => 'nullable|integer'
+            'order' => 'integer',
+            'attribute_groups' => 'array',
+            'attribute_groups.*.name' => 'required|string',
+            'attribute_groups.*.attributes' => 'array',
+            'attribute_groups.*.attributes.*.name' => 'required|string',
+            'attribute_groups.*.attributes.*.translations' => 'required|array',
+            'attribute_groups.*.attributes.*.translations.*' => 'required|array',
+            'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         try {
             DB::beginTransaction();
 
-            // Generate slug from English name
-            $slug = Str::slug($request->translations['en']['name']);
-            $originalSlug = $slug;
-            $count = 1;
+            $category = new Category();
+            $category->user_id = auth()->id();
+            $category->parent_id = $request->parent_id;
+            $category->slug = Str::slug($request->translations['en']['name']);
+            $category->active = $request->input('active', true);
+            $category->featured = $request->input('featured', false);
+            $category->order = $request->input('order', 0);
 
-            // Ensure unique slug
-            while (Category::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
-                $count++;
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('categories', 'public');
+                $category->image = '/storage/' . $path;
             }
 
-            // Create category
-            $category = Category::create([
-                'slug' => $slug,
-                'parent_id' => $request->input('parent_id'),
-                'active' => $request->input('active', true),
-                'image' => $request->input('image'),
-                'featured' => $request->input('featured', false),
-                'order' => $request->input('order', 0),
-                'user_id' => auth()->id() // Autentifikatsiya qilingan foydalanuvchi ID'sini qo'shamiz
-            ]);
+            $category->save();
 
-            // Create translations
+            // Save translations
             foreach ($request->translations as $locale => $translation) {
-                CategoryTranslation::create([
-                    'category_id' => $category->id,
+                $category->translations()->create([
                     'locale' => $locale,
                     'name' => $translation['name'],
-                    'description' => $translation['description']
+                    'description' => $translation['description'] ?? null
                 ]);
+            }
+
+            // Create and attach attribute groups with their attributes
+            if ($request->has('attribute_groups')) {
+                foreach ($request->attribute_groups as $groupData) {
+                    // Create or find attribute group
+                    $attributeGroup = AttributeGroup::firstOrCreate([
+                        'name' => $groupData['name']
+                    ]);
+
+                    $attributeIds = [];
+
+                    // Create attributes for the group
+                    foreach ($groupData['attributes'] as $attributeData) {
+                        $attribute = new Attribute([
+                            'name' => $attributeData['name']
+                        ]);
+                        $attributeGroup->attributes()->save($attribute);
+
+                        // Save attribute translations
+                        foreach ($attributeData['translations'] as $locale => $translation) {
+                            $attribute->translations()->create([
+                                'locale' => $locale,
+                                'name' => $translation['name']
+                            ]);
+                        }
+
+                        $attributeIds[] = $attribute->id;
+                    }
+
+                    // Attach attribute group with its attributes to category
+                    $category->attributeGroups()->attach($attributeGroup->id, [
+                        'attributes' => json_encode($attributeIds)
+                    ]);
+                }
             }
 
             DB::commit();
 
-            // Load the category with translations
-            $category->load('translations');
-
             return response()->json([
-                'success' => true,
                 'message' => 'Category created successfully',
-                'data' => $category
-            ], 201);
+                'category' => $category->load(['translations', 'attributeGroups.attributes.translations'])
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'success' => false,
-                'message' => 'Error creating category: ' . $e->getMessage()
+                'message' => 'Error creating category',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     public function show(Category $category)
     {
-        return response()->json($category->load('translations'));
+        return response()->json($category->load(['translations', 'parent.translations', 'attributeGroups.attributes.translations']));
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/categories/{id}",
-     *     summary="Update category",
-     *     tags={"Categories"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"translations", "image", "active"},
-     *             @OA\Property(property="translations", type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="en", type="array",
-     *                         @OA\Property(property="name", type="string"),
-     *                         @OA\Property(property="description", type="string")
-     *                     ),
-     *                     @OA\Property(property="ru", type="array",
-     *                         @OA\Property(property="name", type="string"),
-     *                         @OA\Property(property="description", type="string")
-     *                     ),
-     *                     @OA\Property(property="uz", type="array",
-     *                         @OA\Property(property="name", type="string"),
-     *                         @OA\Property(property="description", type="string")
-     *                     )
-     *                 )
-     *             ),
-     *             @OA\Property(property="image", type="string"),
-     *             @OA\Property(property="active", type="boolean")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Category updated successfully"
-     *     )
-     * )
-     */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'translations' => 'required|array',
-            'translations.en' => 'required|array',
-            'translations.en.name' => 'required|string|max:255',
-            'translations.en.description' => 'required|string',
-            'translations.ru' => 'required|array',
-            'translations.ru.name' => 'required|string|max:255',
-            'translations.ru.description' => 'required|string',
-            'translations.uz' => 'required|array',
-            'translations.uz.name' => 'required|string|max:255',
-            'translations.uz.description' => 'required|string',
+            'translations.*' => 'required|array',
+            'translations.*.name' => 'required|string',
+            'translations.*.description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
+            'image' => 'nullable|image|max:2048',
             'active' => 'boolean',
-            'image' => 'nullable|string',
             'featured' => 'boolean',
-            'order' => 'nullable|integer'
+            'order' => 'integer',
+            'attribute_groups' => 'array',
+            'attribute_groups.*.name' => 'required|string',
+            'attribute_groups.*.attributes' => 'array',
+            'attribute_groups.*.attributes.*.name' => 'required|string',
+            'attribute_groups.*.attributes.*.translations' => 'required|array',
+            'attribute_groups.*.attributes.*.translations.*' => 'required|array',
+            'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         try {
             DB::beginTransaction();
 
             $category = Category::findOrFail($id);
+            $category->parent_id = $request->parent_id;
+            $category->slug = Str::slug($request->translations['en']['name']);
+            $category->active = $request->input('active', true);
+            $category->featured = $request->input('featured', false);
+            $category->order = $request->input('order', 0);
 
-            // Check if English name is changed
-            if ($category->translations()->where('locale', 'en')->first()->name !== $request->translations['en']['name']) {
-                // Generate new slug from English name
-                $slug = Str::slug($request->translations['en']['name']);
-                $originalSlug = $slug;
-                $count = 1;
-
-                // Ensure unique slug
-                while (Category::where('slug', $slug)->where('id', '!=', $id)->exists()) {
-                    $slug = $originalSlug . '-' . $count;
-                    $count++;
+            if ($request->hasFile('image')) {
+                // Delete old image
+                if ($category->image) {
+                    Storage::disk('public')->delete(str_replace('/storage/', '', $category->image));
                 }
-
-                $category->slug = $slug;
+                
+                $path = $request->file('image')->store('categories', 'public');
+                $category->image = '/storage/' . $path;
             }
 
-            // Update category
-            $category->update([
-                'parent_id' => $request->input('parent_id'),
-                'active' => $request->input('active', true),
-                'image' => $request->input('image'),
-                'featured' => $request->input('featured', false),
-                'order' => $request->input('order', 0)
-            ]);
+            $category->save();
 
             // Update translations
             foreach ($request->translations as $locale => $translation) {
@@ -293,15 +259,53 @@ class CategoryController extends Controller
                     ['locale' => $locale],
                     [
                         'name' => $translation['name'],
-                        'description' => $translation['description']
+                        'description' => $translation['description'] ?? null
                     ]
                 );
+            }
+
+            // Update attribute groups
+            if ($request->has('attribute_groups')) {
+                // Remove old attribute groups
+                $category->attributeGroups()->detach();
+
+                foreach ($request->attribute_groups as $groupData) {
+                    // Create or find attribute group
+                    $attributeGroup = AttributeGroup::firstOrCreate([
+                        'name' => $groupData['name']
+                    ]);
+
+                    $attributeIds = [];
+
+                    // Create or update attributes
+                    foreach ($groupData['attributes'] as $attributeData) {
+                        $attribute = new Attribute([
+                            'name' => $attributeData['name']
+                        ]);
+                        $attributeGroup->attributes()->save($attribute);
+
+                        // Update attribute translations
+                        foreach ($attributeData['translations'] as $locale => $translation) {
+                            $attribute->translations()->updateOrCreate(
+                                ['locale' => $locale],
+                                ['name' => $translation['name']]
+                            );
+                        }
+
+                        $attributeIds[] = $attribute->id;
+                    }
+
+                    // Attach attribute group with its attributes to category
+                    $category->attributeGroups()->attach($attributeGroup->id, [
+                        'attributes' => json_encode($attributeIds)
+                    ]);
+                }
             }
 
             DB::commit();
 
             // Load the category with translations
-            $category->load('translations');
+            $category->load(['translations', 'attributeGroups.attributes.translations']);
 
             return response()->json([
                 'success' => true,
@@ -345,6 +349,11 @@ class CategoryController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            // Delete image if exists
+            if ($category->image) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $category->image));
+            }
 
             // Delete translations first
             $category->translations()->delete();

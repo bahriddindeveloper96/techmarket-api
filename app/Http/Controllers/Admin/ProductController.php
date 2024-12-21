@@ -145,16 +145,7 @@ class ProductController extends Controller
             'translations' => 'required|array',
             'translations.*' => 'required|array',
             'translations.*.name' => 'required|string',
-            'translations.*.description' => 'required|string',
-            'attributes' => 'required|array',
-            'attributes.*' => 'required|string',
-            'variants' => 'required|array',
-            'variants.*.price' => 'required|numeric|min:0',
-            'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.attribute_values' => 'required|array',
-            'variants.*.attribute_values.*' => 'required|string',
-            'variants.*.images' => 'required|array',
-            'variants.*.images.*' => 'required|string'
+            'translations.*.description' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -187,13 +178,54 @@ class ProductController extends Controller
                 ]);
             }
 
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Product created successfully',
+                'product' => new ProductResource($product->load('translations'))
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Product creation failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating product',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeAttributes(Request $request, $productId)
+    {
+        $validator = Validator::make($request->all(), [
+            'attributes' => 'required|array',
+            'attributes.*' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $product = Product::findOrFail($productId);
+            
             // Get category attributes
-            $category = Category::with('attributeGroups.attributes')->findOrFail($request->category_id);
+            $category = Category::with('attributeGroups.attributes')->findOrFail($product->category_id);
             $categoryAttributes = collect();
             
             foreach ($category->attributeGroups as $group) {
                 $categoryAttributes = $categoryAttributes->merge($group->attributes);
             }
+
+            // Remove existing attributes
+            $product->attributes()->detach();
 
             // Save product attributes
             foreach ($request->attributes as $attributeId => $value) {
@@ -202,33 +234,80 @@ class ProductController extends Controller
                 }
             }
 
-            // Create variants
-            foreach ($request->variants as $variantData) {
-                // Format attribute values for storage
-                $attributeValuesFormatted = [];
-                foreach ($variantData['attribute_values'] as $attributeId => $value) {
-                    if ($categoryAttributes->contains('id', $attributeId)) {
-                        $attribute = $categoryAttributes->firstWhere('id', $attributeId);
-                        $attributeValuesFormatted[$attribute->name] = $value;
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Product attributes added successfully',
+                'product' => new ProductResource($product->load(['translations', 'attributes']))
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Adding product attributes failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error adding product attributes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeVariants(Request $request, $productId)
+    {
+        try {
+            $product = Product::with('category.attributeGroups.attributes')->findOrFail($productId);
+            
+            // Validate request structure
+            $validator = Validator::make($request->all(), [
+                'variants' => 'required|array',
+                'variants.*.price' => 'required|numeric|min:0',
+                'variants.*.stock' => 'required|integer|min:0',
+                'variants.*.attribute_values' => 'required|array',
+                'variants.*.images' => 'required|array',
+                'variants.*.images.*' => 'required|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Get category attributes
+            $categoryAttributes = collect();
+            foreach ($product->category->attributeGroups as $group) {
+                $categoryAttributes = $categoryAttributes->merge($group->attributes);
+            }
+
+            // Validate attribute values against category attributes
+            foreach ($request->variants as $variant) {
+                foreach ($variant['attribute_values'] as $attributeId => $value) {
+                    if (!$categoryAttributes->contains('id', $attributeId)) {
+                        return response()->json([
+                            'success' => false,
+                            'errors' => ['attribute_values' => ["Attribute ID {$attributeId} is not valid for this category"]]
+                        ], 422);
                     }
                 }
+            }
 
-                $variant = new ProductVariant([
-                    'price' => $variantData['price'],
-                    'stock' => $variantData['stock'],
-                    'images' => $variantData['images'],
-                    'sku' => strtoupper(Str::slug($request->translations['en']['name']) . '-' . Str::random(5)),
-                    'attribute_values' => $attributeValuesFormatted
-                ]);
+            DB::beginTransaction();
 
-                $variant->product()->associate($product);
+            // Save variants
+            foreach ($request->variants as $variantData) {
+                $variant = new ProductVariant();
+                $variant->product_id = $product->id;
+                $variant->price = $variantData['price'];
+                $variant->stock = $variantData['stock'];
+                $variant->images = $variantData['images'];
+                $variant->attribute_values = $variantData['attribute_values'];
                 $variant->save();
 
                 // Save variant attributes
                 foreach ($variantData['attribute_values'] as $attributeId => $value) {
-                    if ($categoryAttributes->contains('id', $attributeId)) {
-                        $variant->attributes()->attach($attributeId, ['value' => $value]);
-                    }
+                    $variant->attributes()->attach($attributeId, ['value' => $value]);
                 }
             }
 
@@ -236,18 +315,16 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Product created successfully',
-                'data' => new ProductResource($product->load(['translations', 'category', 'variants']))
+                'message' => 'Product variants added successfully',
+                'product' => new ProductResource($product->load(['translations', 'attributes', 'variants.attributes']))
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating product: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
-
+            Log::error('Adding product variants failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating product',
+                'message' => 'Error adding product variants',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -793,30 +870,32 @@ class ProductController extends Controller
 
     public function getAttributesByCategory($categoryId)
     {
-        $category = Category::with(['attributeGroups.attributes.translations' => function ($query) {
-            $query->select('attribute_id', 'locale', 'name');
-        }])->findOrFail($categoryId);
+        try {
+            $category = Category::with('attributeGroups.attributes.translations')
+                ->findOrFail($categoryId);
 
-        $attributeGroups = $category->attributeGroups->map(function ($group) {
-            return [
-                'name' => $group->name,
-                'attributes' => $group->attributes->map(function ($attribute) {
-                    return [
+            $attributes = [];
+            foreach ($category->attributeGroups as $group) {
+                foreach ($group->attributes as $attribute) {
+                    $attributes[] = [
                         'id' => $attribute->id,
-                        'name' => $attribute->name,
-                        'translations' => $attribute->translations->mapWithKeys(function ($translation) {
-                            return [$translation->locale => [
-                                'name' => $translation->name
-                            ]];
-                        })
+                        'name' => $attribute->translations->first()->name,
+                        'group' => $group->translations->first()->name
                     ];
-                })
-            ];
-        });
+                }
+            }
 
-        return response()->json([
-            'success' => true,
-            'data' => $attributeGroups
-        ]);
+            return response()->json([
+                'success' => true,
+                'attributes' => $attributes
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error getting category attributes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

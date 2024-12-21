@@ -63,6 +63,41 @@ class CategoryController extends Controller
         }
     }
 
+    public function uploadImage(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('categories', 'public');
+                return response()->json([
+                    'message' => 'Image uploaded successfully',
+                    'path' => '/storage/' . $path
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'No image file provided'
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Image upload failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error uploading image',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function index()
     {
         // Faqat asosiy kategoriyalarni olamiz (parent_id = null)
@@ -122,14 +157,7 @@ class CategoryController extends Controller
                 'image' => 'nullable|string',
                 'active' => 'boolean',
                 'featured' => 'boolean',
-                'order' => 'integer',
-                'attribute_groups' => 'array',
-                'attribute_groups.*.name' => 'required|string',
-                'attribute_groups.*.attributes' => 'array',
-                'attribute_groups.*.attributes.*.name' => 'required|string',
-                'attribute_groups.*.attributes.*.translations' => 'required|array',
-                'attribute_groups.*.attributes.*.translations.*' => 'required|array',
-                'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
+                'order' => 'integer'
             ]);
 
             if ($validator->fails()) {
@@ -160,14 +188,7 @@ class CategoryController extends Controller
             $category->active = $request->input('active', true);
             $category->featured = $request->input('featured', false);
             $category->order = $request->input('order', 0);
-
-            if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('categories', 'public');
-                $category->image = '/storage/' . $path;
-            } elseif ($request->input('image')) {
-                $category->image = $request->input('image');
-            }
-
+            $category->image = $request->input('image');
             $category->save();
 
             // Save translations
@@ -179,54 +200,13 @@ class CategoryController extends Controller
                 ]);
             }
 
-            // Create and attach attribute groups with their attributes
-            if ($request->has('attribute_groups')) {
-                foreach ($request->attribute_groups as $groupData) {
-                    // Create or find attribute group
-                    $attributeGroup = AttributeGroup::firstOrCreate([
-                        'name' => $groupData['name']
-                    ]);
-
-                    $attributeIds = [];
-
-                    // Create or find attributes for the group
-                    foreach ($groupData['attributes'] as $attributeData) {
-                        // Try to find existing attribute by name
-                        $attribute = Attribute::where('name', $attributeData['name'])->first();
-
-                        if (!$attribute) {
-                            // Create new attribute if it doesn't exist
-                            $attribute = new Attribute([
-                                'name' => $attributeData['name']
-                            ]);
-                            $attributeGroup->attributes()->save($attribute);
-
-                            // Save attribute translations
-                            foreach ($attributeData['translations'] as $locale => $translation) {
-                                $attribute->translations()->create([
-                                    'locale' => $locale,
-                                    'name' => $translation['name']
-                                ]);
-                            }
-                        }
-
-                        $attributeIds[] = $attribute->id;
-                    }
-
-                    // Attach attribute group with its attributes to category
-                    $category->attributeGroups()->attach($attributeGroup->id, [
-                        'attributes' => json_encode($attributeIds)
-                    ]);
-                }
-            }
-
             DB::commit();
 
             Log::info('SQL Queries:', DB::getQueryLog());
             
             return response()->json([
                 'message' => 'Category created successfully',
-                'category' => $category->load(['translations', 'attributeGroups.attributes.translations'])
+                'category' => $category->load(['translations'])
             ]);
 
         } catch (\Exception $e) {
@@ -241,6 +221,85 @@ class CategoryController extends Controller
         }
     }
 
+    public function storeAttributes(Request $request, $categoryId)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'attribute_groups' => 'required|array',
+                'attribute_groups.*.name' => 'required|string',
+                'attribute_groups.*.attributes' => 'required|array',
+                'attribute_groups.*.attributes.*.name' => 'required|string',
+                'attribute_groups.*.attributes.*.translations' => 'required|array',
+                'attribute_groups.*.attributes.*.translations.*' => 'required|array',
+                'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $category = Category::findOrFail($categoryId);
+
+            foreach ($request->attribute_groups as $groupData) {
+                // Create or find attribute group
+                $attributeGroup = AttributeGroup::firstOrCreate([
+                    'name' => $groupData['name']
+                ]);
+
+                $attributeIds = [];
+
+                // Create or find attributes for the group
+                foreach ($groupData['attributes'] as $attributeData) {
+                    // Try to find existing attribute by name
+                    $attribute = Attribute::where('name', $attributeData['name'])->first();
+
+                    if (!$attribute) {
+                        // Create new attribute if it doesn't exist
+                        $attribute = new Attribute([
+                            'name' => $attributeData['name']
+                        ]);
+                        $attributeGroup->attributes()->save($attribute);
+
+                        // Save attribute translations
+                        foreach ($attributeData['translations'] as $locale => $translation) {
+                            $attribute->translations()->create([
+                                'locale' => $locale,
+                                'name' => $translation['name']
+                            ]);
+                        }
+                    }
+
+                    $attributeIds[] = $attribute->id;
+                }
+
+                // Attach attribute group with its attributes to category
+                $category->attributeGroups()->attach($attributeGroup->id, [
+                    'attributes' => json_encode($attributeIds)
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Category attributes added successfully',
+                'category' => $category->load(['translations', 'attributeGroups.attributes.translations'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Adding category attributes failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error adding category attributes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function show(Category $category)
     {
         return response()->json($category->load(['translations', 'parent.translations', 'attributeGroups.attributes.translations']));
@@ -248,44 +307,55 @@ class CategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'translations' => 'required|array',
-            'translations.*' => 'required|array',
-            'translations.*.name' => 'required|string',
-            'translations.*.description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|string',
-            'active' => 'boolean',
-            'featured' => 'boolean',
-            'order' => 'integer',
-            'attribute_groups' => 'array',
-            'attribute_groups.*.name' => 'required|string',
-            'attribute_groups.*.attributes' => 'array',
-            'attribute_groups.*.attributes.*.name' => 'required|string',
-            'attribute_groups.*.attributes.*.translations' => 'required|array',
-            'attribute_groups.*.attributes.*.translations.*' => 'required|array',
-            'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
-        ]);
-
         try {
+            $validator = Validator::make($request->all(), [
+                'translations' => 'required|array',
+                'translations.*' => 'required|array',
+                'translations.*.name' => 'required|string',
+                'translations.*.description' => 'nullable|string',
+                'parent_id' => 'nullable|exists:categories,id',
+                'image' => 'nullable|string',
+                'active' => 'boolean',
+                'featured' => 'boolean',
+                'order' => 'integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             $category = Category::findOrFail($id);
             $category->parent_id = $request->parent_id;
-            $category->slug = Str::slug($request->translations['en']['name']);
+            
+            // Generate unique slug from English name
+            if (isset($request->translations['en']['name'])) {
+                $baseSlug = Str::slug($request->translations['en']['name']);
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                while (Category::where('slug', $slug)->where('id', '!=', $id)->exists()) {
+                    $slug = $baseSlug . '-' . $counter;
+                    $counter++;
+                }
+                
+                $category->slug = $slug;
+            }
+            
             $category->active = $request->input('active', true);
             $category->featured = $request->input('featured', false);
             $category->order = $request->input('order', 0);
 
-            if ($request->hasFile('image')) {
-                // Delete old image
-                if ($category->image) {
+            // Update image if provided
+            if ($request->filled('image')) {
+                // Delete old image if exists and different from new one
+                if ($category->image && $category->image !== $request->input('image')) {
                     Storage::disk('public')->delete(str_replace('/storage/', '', $category->image));
                 }
-                
-                $path = $request->file('image')->store('categories', 'public');
-                $category->image = '/storage/' . $path;
-            } elseif ($request->input('image')) {
                 $category->image = $request->input('image');
             }
 
@@ -302,93 +372,113 @@ class CategoryController extends Controller
                 );
             }
 
-            // Update attribute groups
-            if ($request->has('attribute_groups')) {
-                // Remove old attribute groups
-                $category->attributeGroups()->detach();
-
-                foreach ($request->attribute_groups as $groupData) {
-                    // Create or find attribute group
-                    $attributeGroup = AttributeGroup::firstOrCreate([
-                        'name' => $groupData['name']
-                    ]);
-
-                    $attributeIds = [];
-
-                    // Create or find attributes for the group
-                    foreach ($groupData['attributes'] as $attributeData) {
-                        // Try to find existing attribute by name
-                        $attribute = Attribute::where('name', $attributeData['name'])->first();
-
-                        if (!$attribute) {
-                            // Create new attribute if it doesn't exist
-                            $attribute = new Attribute([
-                                'name' => $attributeData['name']
-                            ]);
-                            $attributeGroup->attributes()->save($attribute);
-
-                            // Save attribute translations
-                            foreach ($attributeData['translations'] as $locale => $translation) {
-                                $attribute->translations()->create([
-                                    'locale' => $locale,
-                                    'name' => $translation['name']
-                                ]);
-                            }
-                        }
-
-                        $attributeIds[] = $attribute->id;
-                    }
-
-                    // Attach attribute group with its attributes to category
-                    $category->attributeGroups()->attach($attributeGroup->id, [
-                        'attributes' => json_encode($attributeIds)
-                    ]);
-                }
-            }
-
             DB::commit();
 
-            // Load the category with translations
-            $category->load(['translations', 'attributeGroups.attributes.translations']);
-
             return response()->json([
-                'success' => true,
                 'message' => 'Category updated successfully',
-                'data' => $category
+                'category' => $category->load(['translations'])
             ]);
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Category not found'
-            ], 404);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Category update failed: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Error updating category: ' . $e->getMessage()
+                'message' => 'Error updating category',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/categories/{id}",
-     *     summary="Delete category",
-     *     tags={"Categories"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Category deleted successfully"
-     *     )
-     * )
-     */
+    public function updateAttributes(Request $request, $categoryId)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'attribute_groups' => 'required|array',
+                'attribute_groups.*.name' => 'required|string',
+                'attribute_groups.*.attributes' => 'required|array',
+                'attribute_groups.*.attributes.*.name' => 'required|string',
+                'attribute_groups.*.attributes.*.translations' => 'required|array',
+                'attribute_groups.*.attributes.*.translations.*' => 'required|array',
+                'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $category = Category::findOrFail($categoryId);
+
+            // Remove existing attribute groups and their relationships
+            $category->attributeGroups()->detach();
+
+            foreach ($request->attribute_groups as $groupData) {
+                // Create or find attribute group
+                $attributeGroup = AttributeGroup::firstOrCreate([
+                    'name' => $groupData['name']
+                ]);
+
+                $attributeIds = [];
+
+                // Create or find attributes for the group
+                foreach ($groupData['attributes'] as $attributeData) {
+                    // Try to find existing attribute by name
+                    $attribute = Attribute::where('name', $attributeData['name'])->first();
+
+                    if (!$attribute) {
+                        // Create new attribute if it doesn't exist
+                        $attribute = new Attribute([
+                            'name' => $attributeData['name']
+                        ]);
+                        $attributeGroup->attributes()->save($attribute);
+
+                        // Save attribute translations
+                        foreach ($attributeData['translations'] as $locale => $translation) {
+                            $attribute->translations()->create([
+                                'locale' => $locale,
+                                'name' => $translation['name']
+                            ]);
+                        }
+                    } else {
+                        // Update existing attribute translations
+                        foreach ($attributeData['translations'] as $locale => $translation) {
+                            $attribute->translations()->updateOrCreate(
+                                ['locale' => $locale],
+                                ['name' => $translation['name']]
+                            );
+                        }
+                    }
+
+                    $attributeIds[] = $attribute->id;
+                }
+
+                // Attach attribute group with its attributes to category
+                $category->attributeGroups()->attach($attributeGroup->id, [
+                    'attributes' => json_encode($attributeIds)
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Category attributes updated successfully',
+                'category' => $category->load(['translations', 'attributeGroups.attributes.translations'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Updating category attributes failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error updating category attributes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function destroy(Category $category)
     {
         try {
@@ -420,9 +510,6 @@ class CategoryController extends Controller
         }
     }
 
-    /**
-     * Get products of a specific category, its subcategories and parent categories
-     */
     public function products($categoryId)
     {
         try {

@@ -39,6 +39,9 @@ Route::prefix('admin')->group(function () {
         Route::get('categories/{category}/child-categories', [CategoryController::class, 'childCategories']);
         Route::get('categories/{category}/products', [CategoryController::class, 'products']);
         Route::get('categories/attributes/by-group', [CategoryController::class, 'getAttributesByGroup']);
+        Route::post('categories/{category}/attributes', [CategoryController::class, 'storeAttributes']);
+        Route::put('categories/{category}/attributes', [CategoryController::class, 'updateAttributes']);
+        Route::post('categories/upload-image', [CategoryController::class, 'uploadImage']);
 
         // Products management
         Route::prefix('products')->group(function () {
@@ -48,6 +51,8 @@ Route::prefix('admin')->group(function () {
             Route::put('/{id}', [ProductController::class, 'update']);
             Route::delete('/{id}', [ProductController::class, 'destroy']);
             Route::get('/attributes/{categoryId}', [ProductController::class, 'getAttributesByCategory']);
+            Route::post('/{product}/attributes', [ProductController::class, 'storeAttributes']);
+            Route::post('/{product}/variants', [ProductController::class, 'storeVariants']);
             Route::post('/upload-images', [ProductController::class, 'uploadImages']);
             Route::post('/{product}/toggle-active', [ProductController::class, 'toggleActive']);
             Route::post('/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);

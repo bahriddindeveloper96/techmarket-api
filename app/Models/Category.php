@@ -15,8 +15,8 @@ class Category extends Model
 {
     protected $fillable = [
         'slug',
-        'image',
-        'images',
+       // 'image',
+       // 'images',
         'active',
         'parent_id',
         'user_id',
@@ -25,7 +25,7 @@ class Category extends Model
     ];
 
     protected $casts = [
-        'images' => 'array',
+       // 'images' => 'array',
         'active' => 'boolean',
         'order' => 'integer',
         'featured' => 'boolean'

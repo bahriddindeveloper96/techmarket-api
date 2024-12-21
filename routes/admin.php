@@ -38,20 +38,27 @@ Route::prefix('admin')->group(function () {
         Route::post('categories/reorder', [CategoryController::class, 'reorder']);
         Route::get('categories/{category}/child-categories', [CategoryController::class, 'childCategories']);
         Route::get('categories/{category}/products', [CategoryController::class, 'products']);
+        Route::get('categories/attributes/by-group', [CategoryController::class, 'getAttributesByGroup']);
 
         // Products management
-        Route::apiResource('products', ProductController::class);
-        Route::get('products/attributes/{category}', [ProductController::class, 'getAttributesByCategory']);
-        Route::post('products/upload-images', [ProductController::class, 'uploadImages']);
-        Route::post('products/{product}/toggle-active', [ProductController::class, 'toggleActive']);
-        Route::post('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
-        Route::post('products/bulk-delete', [ProductController::class, 'bulkDelete']);
-        Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate']);
-        Route::get('products/{product}/variants', [ProductController::class, 'getVariants']);
-        Route::post('products/{product}/variants', [ProductController::class, 'addVariant']);
-        Route::get('products/{product}/variants/{variant}', [ProductController::class, 'getVariant']);
-        Route::put('products/{product}/variants/{variant}', [ProductController::class, 'updateVariant']);
-        Route::delete('products/{product}/variants/{variant}', [ProductController::class, 'deleteVariant']);
+        Route::prefix('products')->group(function () {
+            Route::get('/', [ProductController::class, 'index']);
+            Route::post('/', [ProductController::class, 'store']);
+            Route::get('/{id}', [ProductController::class, 'show']);
+            Route::put('/{id}', [ProductController::class, 'update']);
+            Route::delete('/{id}', [ProductController::class, 'destroy']);
+            Route::get('/attributes/{categoryId}', [ProductController::class, 'getAttributesByCategory']);
+            Route::post('/upload-images', [ProductController::class, 'uploadImages']);
+            Route::post('/{product}/toggle-active', [ProductController::class, 'toggleActive']);
+            Route::post('/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
+            Route::post('/bulk-delete', [ProductController::class, 'bulkDelete']);
+            Route::post('/bulk-update', [ProductController::class, 'bulkUpdate']);
+            Route::get('/{product}/variants', [ProductController::class, 'getVariants']);
+            Route::post('/{product}/variants', [ProductController::class, 'addVariant']);
+            Route::get('/{product}/variants/{variant}', [ProductController::class, 'getVariant']);
+            Route::put('/{product}/variants/{variant}', [ProductController::class, 'updateVariant']);
+            Route::delete('/{product}/variants/{variant}', [ProductController::class, 'deleteVariant']);
+        });
 
          // File uploads
         Route::post('/upload', [FileController::class, 'upload']);

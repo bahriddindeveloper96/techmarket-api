@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             StaticUserTokenSeeder::class,
-            AttributeSeeder::class,
+           // AttributeSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
             BannerSeeder::class,

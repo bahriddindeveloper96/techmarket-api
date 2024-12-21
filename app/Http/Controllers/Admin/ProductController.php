@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\FileController;
 
 use App\Models\Attribute;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTranslation;
 use App\Models\ProductVariant;
@@ -122,46 +123,38 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        try {
-            $product = Product::with(['translations', 'variants', 'category'])
-                ->findOrFail($id);
+        $product = Product::with([
+            'translations',
+            'category',
+            'variants' => function ($query) {
+                $query->with('attributes');
+            },
+            'attributes'
+        ])->findOrFail($id);
 
-            return response()->json([
-                'message' => 'Product retrieved successfully',
-                'data' => $product
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Product not found',
-                'error' => $e->getMessage()
-            ], 404);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => new ProductResource($product)
+        ]);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,id',
-            'user_id' => 'required|exists:users,id',
-            'slug' => 'required|string|unique:products',
-            'active' => 'required|boolean',
-            'featured' => 'required|boolean',
-            'attributes' => 'required|array',
             'translations' => 'required|array',
-            'translations.en' => 'required|array',
-            'translations.en.name' => 'required|string|max:255',
-            'translations.en.description' => 'required|string',
-            'translations.ru' => 'required|array',
-            'translations.ru.name' => 'required|string|max:255',
-            'translations.ru.description' => 'required|string',
-            'translations.uz' => 'required|array',
-            'translations.uz.name' => 'required|string|max:255',
-            'translations.uz.description' => 'required|string',
+            'translations.*' => 'required|array',
+            'translations.*.name' => 'required|string',
+            'translations.*.description' => 'required|string',
+            'attributes' => 'required|array',
+            'attributes.*' => 'required|string',
             'variants' => 'required|array',
-            'variants.*.attribute_values' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.images' => 'array'
+            'variants.*.attribute_values' => 'required|array',
+            'variants.*.attribute_values.*' => 'required|string',
+            'variants.*.images' => 'required|array',
+            'variants.*.images.*' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -175,16 +168,17 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             // Create product
-            $product = Product::create([
-                'user_id' => $request->user_id,
+            $product = new Product([
                 'category_id' => $request->category_id,
-                'slug' => $request->slug,
-                'active' => $request->active,
-                'featured' => $request->featured,
-                'attributes' => $request->attributes
+                'user_id' => auth()->id(),
+                'slug' => Str::slug($request->translations['en']['name']),
+                'active' => $request->input('active', true),
+                'featured' => $request->input('featured', false)
             ]);
 
-            // Create translations
+            $product->save();
+
+            // Save translations
             foreach ($request->translations as $locale => $translation) {
                 $product->translations()->create([
                     'locale' => $locale,
@@ -193,16 +187,49 @@ class ProductController extends Controller
                 ]);
             }
 
+            // Get category attributes
+            $category = Category::with('attributeGroups.attributes')->findOrFail($request->category_id);
+            $categoryAttributes = collect();
+            
+            foreach ($category->attributeGroups as $group) {
+                $categoryAttributes = $categoryAttributes->merge($group->attributes);
+            }
+
+            // Save product attributes
+            foreach ($request->attributes as $attributeId => $value) {
+                if ($categoryAttributes->contains('id', $attributeId)) {
+                    $product->attributes()->attach($attributeId, ['value' => $value]);
+                }
+            }
+
             // Create variants
             foreach ($request->variants as $variantData) {
-                $variant = $product->variants()->create([
-                    'attribute_values' => $variantData['attribute_values'],
+                // Format attribute values for storage
+                $attributeValuesFormatted = [];
+                foreach ($variantData['attribute_values'] as $attributeId => $value) {
+                    if ($categoryAttributes->contains('id', $attributeId)) {
+                        $attribute = $categoryAttributes->firstWhere('id', $attributeId);
+                        $attributeValuesFormatted[$attribute->name] = $value;
+                    }
+                }
+
+                $variant = new ProductVariant([
                     'price' => $variantData['price'],
                     'stock' => $variantData['stock'],
-                    'active' => true,
-                    'images' => $variantData['images'] ?? [],
-                    'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
+                    'images' => $variantData['images'],
+                    'sku' => strtoupper(Str::slug($request->translations['en']['name']) . '-' . Str::random(5)),
+                    'attribute_values' => $attributeValuesFormatted
                 ]);
+
+                $variant->product()->associate($product);
+                $variant->save();
+
+                // Save variant attributes
+                foreach ($variantData['attribute_values'] as $attributeId => $value) {
+                    if ($categoryAttributes->contains('id', $attributeId)) {
+                        $variant->attributes()->attach($attributeId, ['value' => $value]);
+                    }
+                }
             }
 
             DB::commit();
@@ -210,44 +237,39 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product created successfully',
-                'data' => $product->load(['translations', 'variants'])
-            ], 201);
+                'data' => new ProductResource($product->load(['translations', 'category', 'variants']))
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error creating product: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating product: ' . $e->getMessage()
+                'message' => 'Error creating product',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
-
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,id',
-            'user_id' => 'required|exists:users,id',
-            'slug' => 'required|string|unique:products,slug,' . $id,
-            'active' => 'required|boolean',
-            'featured' => 'required|boolean',
-            'attributes' => 'required|array',
             'translations' => 'required|array',
-            'translations.en' => 'required|array',
-            'translations.en.name' => 'required|string|max:255',
-            'translations.en.description' => 'required|string',
-            'translations.ru' => 'required|array',
-            'translations.ru.name' => 'required|string|max:255',
-            'translations.ru.description' => 'required|string',
-            'translations.uz' => 'required|array',
-            'translations.uz.name' => 'required|string|max:255',
-            'translations.uz.description' => 'required|string',
+            'translations.*' => 'required|array',
+            'translations.*.name' => 'required|string',
+            'translations.*.description' => 'required|string',
+            'attributes' => 'required|array',
+            'attributes.*' => 'required|string',
             'variants' => 'required|array',
-            'variants.*.attribute_values' => 'required|array',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
-            'variants.*.images' => 'array'
+            'variants.*.attribute_values' => 'required|array',
+            'variants.*.attribute_values.*' => 'required|string',
+            'variants.*.images' => 'required|array',
+            'variants.*.images.*' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -260,23 +282,20 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
 
-            // Update product
+            $product = Product::findOrFail($id);
+
+            // Update basic product info
             $product->update([
-                'user_id' => $request->user_id,
                 'category_id' => $request->category_id,
-                'slug' => $request->slug,
-                'active' => $request->active,
-                'featured' => $request->featured,
-                'attributes' => $request->attributes
+                'slug' => Str::slug($request->translations['en']['name']),
+                'active' => $request->input('active', $product->active),
+                'featured' => $request->input('featured', $product->featured)
             ]);
 
             // Update translations
             foreach ($request->translations as $locale => $translation) {
-                ProductTranslation::updateOrCreate(
-                    [
-                        'product_id' => $product->id,
-                        'locale' => $locale
-                    ],
+                $product->translations()->updateOrCreate(
+                    ['locale' => $locale],
                     [
                         'name' => $translation['name'],
                         'description' => $translation['description']
@@ -284,39 +303,51 @@ class ProductController extends Controller
                 );
             }
 
+            // Get category attributes
+            $category = Category::with('attributeGroups.attributes')->findOrFail($request->category_id);
+            $categoryAttributes = collect();
+            
+            foreach ($category->attributeGroups as $group) {
+                $categoryAttributes = $categoryAttributes->merge($group->attributes);
+            }
+
+            // Update product attributes
+            $product->attributes()->detach();
+            foreach ($request->attributes as $attributeId => $value) {
+                if ($categoryAttributes->contains('id', $attributeId)) {
+                    $product->attributes()->attach($attributeId, ['value' => $value]);
+                }
+            }
+
             // Update variants
-            if ($request->has('variants')) {
-                foreach ($request->variants as $variantData) {
-                    // Existing variant bo'lsa update qilish
-                    $variant = $product->variants()
-                        ->where('attribute_values', json_encode($variantData['attribute_values']))
-                        ->first();
-                    
-                    if ($variant) {
-                        $variant->update([
-                            'price' => $variantData['price'],
-                            'stock' => $variantData['stock'],
-                            'active' => true,
-                            'images' => $variantData['images'] ?? [],
-                            'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
-                        ]);
-                    } else {
-                        // Yangi variant yaratish
-                        $product->variants()->create([
-                            'attribute_values' => $variantData['attribute_values'],
-                            'price' => $variantData['price'],
-                            'stock' => $variantData['stock'],
-                            'active' => true,
-                            'images' => $variantData['images'] ?? [],
-                            'sku' => strtoupper(Str::slug($request->translations['en']['name'])) . '-' . strtoupper(Str::random(4))
-                        ]);
+            $product->variants()->delete(); // Remove old variants
+            foreach ($request->variants as $variantData) {
+                // Format attribute values for storage
+                $attributeValuesFormatted = [];
+                foreach ($variantData['attribute_values'] as $attributeId => $value) {
+                    if ($categoryAttributes->contains('id', $attributeId)) {
+                        $attribute = $categoryAttributes->firstWhere('id', $attributeId);
+                        $attributeValuesFormatted[$attribute->name] = $value;
                     }
                 }
-                
-                // Eski, ishlatilmagan variantlarni deactivate qilish
-                $product->variants()
-                    ->whereNotIn('attribute_values', collect($request->variants)->pluck('attribute_values')->map(fn($av) => json_encode($av)))
-                    ->update(['active' => false]);
+
+                $variant = new ProductVariant([
+                    'price' => $variantData['price'],
+                    'stock' => $variantData['stock'],
+                    'images' => $variantData['images'],
+                    'sku' => strtoupper(Str::slug($request->translations['en']['name']) . '-' . Str::random(5)),
+                    'attribute_values' => $attributeValuesFormatted
+                ]);
+
+                $variant->product()->associate($product);
+                $variant->save();
+
+                // Save variant attributes
+                foreach ($variantData['attribute_values'] as $attributeId => $value) {
+                    if ($categoryAttributes->contains('id', $attributeId)) {
+                        $variant->attributes()->attach($attributeId, ['value' => $value]);
+                    }
+                }
             }
 
             DB::commit();
@@ -324,14 +355,18 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully',
-                'data' => $product->load(['translations', 'variants', 'category'])
+                'data' => new ProductResource($product->load(['translations', 'category', 'variants']))
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error updating product: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating product: ' . $e->getMessage()
+                'message' => 'Error updating product',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -551,11 +586,12 @@ class ProductController extends Controller
     public function addVariant(Request $request, $productId)
     {
         $validator = Validator::make($request->all(), [
-            'attribute_values' => 'required|array',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'images' => 'nullable|array',
-            'active' => 'boolean'
+            'attribute_values' => 'required|array',
+            'attribute_values.*' => 'required|string',
+            'images' => 'required|array',
+            'images.*' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -566,51 +602,62 @@ class ProductController extends Controller
         }
 
         try {
-            $product = Product::findOrFail($productId);
+            DB::beginTransaction();
 
-            // Check if variant with same attributes exists
-            $existingVariant = $product->variants()
-                ->where('attribute_values', json_encode($request->attribute_values))
-                ->first();
-
-            if ($existingVariant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Variant with these attributes already exists'
-                ], 422);
+            $product = Product::with('category.attributeGroups.attributes')->findOrFail($productId);
+            
+            // Get all category attributes
+            $categoryAttributes = collect();
+            foreach ($product->category->attributeGroups as $group) {
+                $categoryAttributes = $categoryAttributes->merge($group->attributes);
             }
 
-            // Create new variant
-            $variant = $product->variants()->create([
-                'attribute_values' => $request->attribute_values,
+            // Format attribute values for storage
+            $attributeValuesFormatted = [];
+            foreach ($request->attribute_values as $attributeId => $value) {
+                if ($categoryAttributes->contains('id', $attributeId)) {
+                    $attribute = $categoryAttributes->firstWhere('id', $attributeId);
+                    $attributeValuesFormatted[$attribute->name] = $value;
+                }
+            }
+
+            // Create variant
+            $variant = new ProductVariant([
                 'price' => $request->price,
                 'stock' => $request->stock,
-                'active' => $request->input('active', true),
-                'images' => $request->input('images', []),
-                'sku' => strtoupper(Str::slug($product->translations->where('locale', 'en')->first()->name)) 
-                    . '-' . strtoupper(Str::random(4))
+                'images' => $request->images,
+                'sku' => strtoupper($product->slug . '-' . Str::random(5)),
+                'attribute_values' => $attributeValuesFormatted,
+                'active' => true
             ]);
+
+            $variant->product()->associate($product);
+            $variant->save();
+
+            // Save variant attributes
+            foreach ($request->attribute_values as $attributeId => $value) {
+                if ($categoryAttributes->contains('id', $attributeId)) {
+                    $variant->attributes()->attach($attributeId, ['value' => $value]);
+                }
+            }
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Variant added successfully',
-                'data' => [
-                    'id' => $variant->id,
-                    'sku' => $variant->sku,
-                    'price' => $variant->price,
-                    'stock' => $variant->stock,
-                    'active' => $variant->active,
-                    'attribute_values' => $variant->attribute_values,
-                    'images' => $variant->images,
-                    'created_at' => $variant->created_at,
-                    'updated_at' => $variant->updated_at
-                ]
-            ], 201);
+                'data' => $variant->load('attributes')
+            ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding variant: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error adding variant: ' . $e->getMessage()
+                'message' => 'Error adding variant',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -621,11 +668,12 @@ class ProductController extends Controller
     public function updateVariant(Request $request, $productId, $variantId)
     {
         $validator = Validator::make($request->all(), [
-            'attribute_values' => 'array',
-            'price' => 'numeric|min:0',
-            'stock' => 'integer|min:0',
-            'images' => 'nullable|array',
-            'active' => 'boolean'
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'attribute_values' => 'required|array',
+            'attribute_values.*' => 'required|string',
+            'images' => 'required|array',
+            'images.*' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -636,76 +684,59 @@ class ProductController extends Controller
         }
 
         try {
-            $product = Product::findOrFail($productId);
+            DB::beginTransaction();
+
+            $product = Product::with('category.attributeGroups.attributes')->findOrFail($productId);
+            $variant = $product->variants()->findOrFail($variantId);
             
-            $variant = $product->variants()
-                ->where('id', $variantId)
-                ->firstOrFail();
+            // Get all category attributes
+            $categoryAttributes = collect();
+            foreach ($product->category->attributeGroups as $group) {
+                $categoryAttributes = $categoryAttributes->merge($group->attributes);
+            }
 
-            // Check if attribute values are being updated and if they would conflict
-            if ($request->has('attribute_values')) {
-                $existingVariant = $product->variants()
-                    ->where('id', '!=', $variantId)
-                    ->where('attribute_values', json_encode($request->attribute_values))
-                    ->first();
-
-                if ($existingVariant) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Another variant with these attributes already exists'
-                    ], 422);
+            // Format attribute values for storage
+            $attributeValuesFormatted = [];
+            foreach ($request->attribute_values as $attributeId => $value) {
+                if ($categoryAttributes->contains('id', $attributeId)) {
+                    $attribute = $categoryAttributes->firstWhere('id', $attributeId);
+                    $attributeValuesFormatted[$attribute->name] = $value;
                 }
             }
 
             // Update variant
-            $updateData = [];
-            
-            if ($request->has('attribute_values')) {
-                $updateData['attribute_values'] = $request->attribute_values;
-            }
-            if ($request->has('price')) {
-                $updateData['price'] = $request->price;
-            }
-            if ($request->has('stock')) {
-                $updateData['stock'] = $request->stock;
-            }
-            if ($request->has('images')) {
-                $updateData['images'] = $request->images;
-            }
-            if ($request->has('active')) {
-                $updateData['active'] = $request->active;
+            $variant->update([
+                'price' => $request->price,
+                'stock' => $request->stock,
+                'images' => $request->images,
+                'attribute_values' => $attributeValuesFormatted
+            ]);
+
+            // Update variant attributes
+            $variant->attributes()->detach();
+            foreach ($request->attribute_values as $attributeId => $value) {
+                if ($categoryAttributes->contains('id', $attributeId)) {
+                    $variant->attributes()->attach($attributeId, ['value' => $value]);
+                }
             }
 
-            $variant->update($updateData);
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Variant updated successfully',
-                'data' => [
-                    'product_id' => $product->id,
-                    'product_name' => $product->translations->where('locale', 'en')->first()->name,
-                    'variant' => [
-                        'id' => $variant->id,
-                        'sku' => $variant->sku,
-                        'price' => $variant->price,
-                        'stock' => $variant->stock,
-                        'active' => $variant->active,
-                        'attribute_values' => $variant->attribute_values,
-                        'images' => $variant->images,
-                        'created_at' => $variant->created_at,
-                        'updated_at' => $variant->updated_at
-                    ]
-                ]
+                'data' => $variant->load('attributes')
             ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Product or variant not found'
-            ], 404);
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating variant: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating variant: ' . $e->getMessage()
+                'message' => 'Error updating variant',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -760,19 +791,32 @@ class ProductController extends Controller
         }
     }
 
-    // public function purchaseHistory()
-    // {
-    //     $products = auth()->user()->orders()
-    //         ->with(['items.product'])
-    //         ->latest()
-    //         ->get()
-    //         ->pluck('items')
-    //         ->flatten()
-    //         ->pluck('product')
-    //         ->unique('id');
+    public function getAttributesByCategory($categoryId)
+    {
+        $category = Category::with(['attributeGroups.attributes.translations' => function ($query) {
+            $query->select('attribute_id', 'locale', 'name');
+        }])->findOrFail($categoryId);
 
-    //     return response()->json([
-    //         'products' => $products
-    //     ]);
-    // }
+        $attributeGroups = $category->attributeGroups->map(function ($group) {
+            return [
+                'name' => $group->name,
+                'attributes' => $group->attributes->map(function ($attribute) {
+                    return [
+                        'id' => $attribute->id,
+                        'name' => $attribute->name,
+                        'translations' => $attribute->translations->mapWithKeys(function ($translation) {
+                            return [$translation->locale => [
+                                'name' => $translation->name
+                            ]];
+                        })
+                    ];
+                })
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $attributeGroups
+        ]);
+    }
 }

@@ -1,0 +1,780 @@
+{
+	"info": {
+		"_postman_id": "2b4beba2-8952-4d4e-ba1b-8b7833abea4f",
+		"name": "TechMarket Admin API",
+		"description": "Admin panel API endpoints for TechMarket",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38055963"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Auth User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/auth/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"auth",
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Chart Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/chart-data",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"chart-data"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password\",\n    \"role\": \"user\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle User Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/users/:id/toggle-active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								":id",
+								"toggle-active"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get Categories",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "4|sAtEYgdaDUBjpo6JW4U1ndEKTBLgRiOYdd11u2vvf1e68b39",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "attribute category",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "2|VxtSy24b9RaUviEb9ycI2MfBDIt7X0c0PleDzMnP860c11bb",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"translations\": {\r\n        \"uz\": {\r\n            \"name\": \"Planshetlar\",\r\n            \"description\": \"Planshetlar tavsifi\"\r\n        },\r\n        \"ru\": {\r\n            \"name\": \"Планшеты\",\r\n            \"description\": \"Описание планшетов\"\r\n        },\r\n        \"en\": {\r\n            \"name\": \"Tablets\",\r\n            \"description\": \"Tablets description\"\r\n        }\r\n    },\r\n    \"parent_id\": null,\r\n    \"image\": \"categories/tablets.jpg\",\r\n    \"active\": true,\r\n    \"featured\": false,\r\n    \"order\": 2,\r\n    \"attribute_groups\": [Response from the previous API]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/categories/attributes/by-group?groups[]=Asosiy xususiyatlar&groups[]=Texnik xususiyatlar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"categories",
+								"attributes",
+								"by-group"
+							],
+							"query": [
+								{
+									"key": "groups[]",
+									"value": "Asosiy xususiyatlar"
+								},
+								{
+									"key": "groups[]",
+									"value": "Texnik xususiyatlar"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "2|VxtSy24b9RaUviEb9ycI2MfBDIt7X0c0PleDzMnP860c11bb",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"translations\": {\n        \"uz\": {\n            \"name\": \"Smartfonlar\",\n            \"description\": \"Smartfonlar tavsifi\"\n        },\n        \"ru\": {\n            \"name\": \"Смартфоны\",\n            \"description\": \"Описание смартфонов\"\n        },\n        \"en\": {\n            \"name\": \"Smartphones\",\n            \"description\": \"Smartphones description\"\n        }\n    },\n    \"parent_id\": null,\n    \"image\": \"categories/smartphones.jpg\",\n    \"active\": true,\n    \"featured\": false,\n    \"order\": 1,\n    \"attribute_groups\": [\n        {\n            \"name\": \"Asosiy xususiyatlar\",\n            \"attributes\": [\n                {\n                    \"name\": \"brand\",\n                    \"translations\": {\n                        \"uz\": { \"name\": \"Brend\" },\n                        \"ru\": { \"name\": \"Бренд\" },\n                        \"en\": { \"name\": \"Brand\" }\n                    }\n                },\n                {\n                    \"name\": \"model\",\n                    \"translations\": {\n                        \"uz\": { \"name\": \"Model\" },\n                        \"ru\": { \"name\": \"Модель\" },\n                        \"en\": { \"name\": \"Model\" }\n                    }\n                },\n                {\n                    \"name\": \"color\",\n                    \"translations\": {\n                        \"uz\": { \"name\": \"Rangi\" },\n                        \"ru\": { \"name\": \"Цвет\" },\n                        \"en\": { \"name\": \"Color\" }\n                    }\n                }\n            ]\n        },\n        {\n            \"name\": \"Texnik xususiyatlar\",\n            \"attributes\": [\n                {\n                    \"name\": \"ram\",\n                    \"translations\": {\n                        \"uz\": { \"name\": \"Operativ xotira\" },\n                        \"ru\": { \"name\": \"Оперативная память\" },\n                        \"en\": { \"name\": \"RAM\" }\n                    }\n                },\n                {\n                    \"name\": \"storage\",\n                    \"translations\": {\n                        \"uz\": { \"name\": \"Doimiy xotira\" },\n                        \"ru\": { \"name\": \"Постоянная память\" },\n                        \"en\": { \"name\": \"Storage\" }\n                    }\n                },\n                {\n                    \"name\": \"screen_size\",\n                    \"translations\": {\n                        \"uz\": { \"name\": \"Ekran o'lchami\" },\n                        \"ru\": { \"name\": \"Размер экрана\" },\n                        \"en\": { \"name\": \"Screen size\" }\n                    }\n                }\n            ]\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reorder Categories",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categories\": [\n        {\"id\": 1, \"position\": 1},\n        {\"id\": 2, \"position\": 2}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/categories/reorder",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"categories",
+								"reorder"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create product variants",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "2|awumkcKLn3YccBRYeM6VgeXA3bwVl90Dd5u3ZH9Ia630e4ef",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"price\": 999.99,\r\n    \"stock\": 50,\r\n    \"attribute_values\": {\r\n        \"3\": \"Black\",\r\n        \"4\": \"256GB\"\r\n    },\r\n    \"images\": [\r\n        \"/storage/products/iphone15pro-black-1.jpg\",\r\n        \"/storage/products/iphone15pro-black-2.jpg\"\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/products/1/variants/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"1",
+								"variants",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update product variants",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "2|awumkcKLn3YccBRYeM6VgeXA3bwVl90Dd5u3ZH9Ia630e4ef",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"price\": 999.99,\r\n    \"stock\": 50,\r\n    \"attribute_values\": {\r\n        \"3\": \"Black\",\r\n        \"4\": \"256GB\"\r\n    },\r\n    \"images\": [\r\n        \"/storage/products/iphone15pro-black-1.jpg\",\r\n        \"/storage/products/iphone15pro-black-2.jpg\"\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/products/1/variants/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"1",
+								"variants",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"iPhone 13\",\n    \"description\": \"Latest iPhone model\",\n    \"price\": 999.99,\n    \"category_id\": 1,\n    \"attributes\": [\n        {\"id\": 1, \"value\": \"Apple\"},\n        {\"id\": 2, \"value\": \"Black\"}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"iPhone 13\",\n    \"description\": \"Latest iPhone model\",\n    \"price\": 999.99,\n    \"category_id\": 1,\n    \"attributes\": [\n        {\"id\": 1, \"value\": \"Apple\"},\n        {\"id\": 2, \"value\": \"Black\"}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Product Images",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/products/upload-images",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								"upload-images"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Product Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/products/:id/toggle-active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"products",
+								":id",
+								"toggle-active"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Get Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Order Status",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"processing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/orders/:id/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"orders",
+								":id",
+								"status"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/orders/export",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"orders",
+								"export"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delivery Methods",
+			"item": [
+				{
+					"name": "Get Delivery Methods",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/delivery-methods",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"delivery-methods"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Delivery Method",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Express Delivery\",\n    \"price\": 15.99,\n    \"position\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/delivery-methods",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"delivery-methods"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payment Methods",
+			"item": [
+				{
+					"name": "Get Payment Methods",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/payment-methods",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"payment-methods"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Payment Method",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Credit Card\",\n    \"position\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/payment-methods",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"payment-methods"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{admin_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "your_admin_token_here",
+			"type": "string"
+		}
+	]
+}

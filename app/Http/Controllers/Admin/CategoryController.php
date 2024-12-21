@@ -108,32 +108,55 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'translations' => 'required|array',
-            'translations.*' => 'required|array',
-            'translations.*.name' => 'required|string',
-            'translations.*.description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|max:2048',
-            'active' => 'boolean',
-            'featured' => 'boolean',
-            'order' => 'integer',
-            'attribute_groups' => 'array',
-            'attribute_groups.*.name' => 'required|string',
-            'attribute_groups.*.attributes' => 'array',
-            'attribute_groups.*.attributes.*.name' => 'required|string',
-            'attribute_groups.*.attributes.*.translations' => 'required|array',
-            'attribute_groups.*.attributes.*.translations.*' => 'required|array',
-            'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
-        ]);
-
+        DB::enableQueryLog();
+        
+        Log::info('Category creation request:', $request->all());
+        
         try {
+            $validator = Validator::make($request->all(), [
+                'translations' => 'required|array',
+                'translations.*' => 'required|array',
+                'translations.*.name' => 'required|string',
+                'translations.*.description' => 'nullable|string',
+                'parent_id' => 'nullable|exists:categories,id',
+                'image' => 'nullable|string',
+                'active' => 'boolean',
+                'featured' => 'boolean',
+                'order' => 'integer',
+                'attribute_groups' => 'array',
+                'attribute_groups.*.name' => 'required|string',
+                'attribute_groups.*.attributes' => 'array',
+                'attribute_groups.*.attributes.*.name' => 'required|string',
+                'attribute_groups.*.attributes.*.translations' => 'required|array',
+                'attribute_groups.*.attributes.*.translations.*' => 'required|array',
+                'attribute_groups.*.attributes.*.translations.*.name' => 'required|string'
+            ]);
+
+            if ($validator->fails()) {
+                Log::error('Validation failed:', $validator->errors()->toArray());
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             $category = new Category();
             $category->user_id = auth()->id();
             $category->parent_id = $request->parent_id;
-            $category->slug = Str::slug($request->translations['en']['name']);
+            
+            // Generate unique slug
+            $baseSlug = Str::slug($request->translations['en']['name']);
+            $slug = $baseSlug;
+            $counter = 1;
+            
+            while (Category::where('slug', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+            
+            $category->slug = $slug;
             $category->active = $request->input('active', true);
             $category->featured = $request->input('featured', false);
             $category->order = $request->input('order', 0);
@@ -141,6 +164,8 @@ class CategoryController extends Controller
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('categories', 'public');
                 $category->image = '/storage/' . $path;
+            } elseif ($request->input('image')) {
+                $category->image = $request->input('image');
             }
 
             $category->save();
@@ -164,19 +189,25 @@ class CategoryController extends Controller
 
                     $attributeIds = [];
 
-                    // Create attributes for the group
+                    // Create or find attributes for the group
                     foreach ($groupData['attributes'] as $attributeData) {
-                        $attribute = new Attribute([
-                            'name' => $attributeData['name']
-                        ]);
-                        $attributeGroup->attributes()->save($attribute);
+                        // Try to find existing attribute by name
+                        $attribute = Attribute::where('name', $attributeData['name'])->first();
 
-                        // Save attribute translations
-                        foreach ($attributeData['translations'] as $locale => $translation) {
-                            $attribute->translations()->create([
-                                'locale' => $locale,
-                                'name' => $translation['name']
+                        if (!$attribute) {
+                            // Create new attribute if it doesn't exist
+                            $attribute = new Attribute([
+                                'name' => $attributeData['name']
                             ]);
+                            $attributeGroup->attributes()->save($attribute);
+
+                            // Save attribute translations
+                            foreach ($attributeData['translations'] as $locale => $translation) {
+                                $attribute->translations()->create([
+                                    'locale' => $locale,
+                                    'name' => $translation['name']
+                                ]);
+                            }
                         }
 
                         $attributeIds[] = $attribute->id;
@@ -191,6 +222,8 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            Log::info('SQL Queries:', DB::getQueryLog());
+            
             return response()->json([
                 'message' => 'Category created successfully',
                 'category' => $category->load(['translations', 'attributeGroups.attributes.translations'])
@@ -198,9 +231,12 @@ class CategoryController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Category creation failed: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
             return response()->json([
                 'message' => 'Error creating category',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
@@ -218,7 +254,7 @@ class CategoryController extends Controller
             'translations.*.name' => 'required|string',
             'translations.*.description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|string',
             'active' => 'boolean',
             'featured' => 'boolean',
             'order' => 'integer',
@@ -249,6 +285,8 @@ class CategoryController extends Controller
                 
                 $path = $request->file('image')->store('categories', 'public');
                 $category->image = '/storage/' . $path;
+            } elseif ($request->input('image')) {
+                $category->image = $request->input('image');
             }
 
             $category->save();
@@ -277,19 +315,25 @@ class CategoryController extends Controller
 
                     $attributeIds = [];
 
-                    // Create or update attributes
+                    // Create or find attributes for the group
                     foreach ($groupData['attributes'] as $attributeData) {
-                        $attribute = new Attribute([
-                            'name' => $attributeData['name']
-                        ]);
-                        $attributeGroup->attributes()->save($attribute);
+                        // Try to find existing attribute by name
+                        $attribute = Attribute::where('name', $attributeData['name'])->first();
 
-                        // Update attribute translations
-                        foreach ($attributeData['translations'] as $locale => $translation) {
-                            $attribute->translations()->updateOrCreate(
-                                ['locale' => $locale],
-                                ['name' => $translation['name']]
-                            );
+                        if (!$attribute) {
+                            // Create new attribute if it doesn't exist
+                            $attribute = new Attribute([
+                                'name' => $attributeData['name']
+                            ]);
+                            $attributeGroup->attributes()->save($attribute);
+
+                            // Save attribute translations
+                            foreach ($attributeData['translations'] as $locale => $translation) {
+                                $attribute->translations()->create([
+                                    'locale' => $locale,
+                                    'name' => $translation['name']
+                                ]);
+                            }
                         }
 
                         $attributeIds[] = $attribute->id;
@@ -573,5 +617,39 @@ class CategoryController extends Controller
                 'message' => 'Error retrieving child categories: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getAttributesByGroup(Request $request)
+    {
+        $request->validate([
+            'groups' => 'required|array',
+            'groups.*' => 'required|string'
+        ]);
+
+        $attributeGroups = AttributeGroup::whereIn('name', $request->groups)
+            ->with(['attributes.translations' => function ($query) {
+                $query->select('attribute_id', 'locale', 'name');
+            }])
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'name' => $group->name,
+                    'attributes' => $group->attributes->map(function ($attribute) {
+                        return [
+                            'name' => $attribute->name,
+                            'translations' => $attribute->translations->mapWithKeys(function ($translation) {
+                                return [$translation->locale => [
+                                    'name' => $translation->name
+                                ]];
+                            })
+                        ];
+                    })
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $attributeGroups
+        ]);
     }
 }

@@ -102,7 +102,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 999.99,
                         'stock' => 50,
-                        'images' => ['products/iphone15pro-black-1.jpg', 'products/iphone15pro-black-2.jpg']
+                        'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -112,7 +112,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1099.99,
                         'stock' => 30,
-                        'images' => ['products/iphone15pro-silver-1.jpg', 'products/iphone15pro-silver-2.jpg']
+                        'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/2.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -122,7 +122,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1299.99,
                         'stock' => 20,
-                        'images' => ['products/iphone15pro-gold-1.jpg', 'products/iphone15pro-gold-2.jpg']
+                        'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/2.webp']
                     ]
                 ]
             ],
@@ -162,7 +162,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1199.99,
                         'stock' => 40,
-                        'images' => ['products/s24ultra-black-1.jpg', 'products/s24ultra-black-2.jpg']
+                        'images' => ['http://127.0.0.1:8000/storage/products/1.webp', 'http://127.0.0.1:8000/storage/products/2.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -172,7 +172,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1399.99,
                         'stock' => 25,
-                        'images' => ['products/s24ultra-gray-1.jpg', 'products/s24ultra-gray-2.jpg']
+                        'images' => ['http://127.0.0.1:8000/storage/products/2.webp', 'http://127.0.0.1:8000/storage/products/3.webp']
                     ],
                     [
                         'attribute_values' => [
@@ -182,7 +182,7 @@ class ProductSeeder extends Seeder
                         ],
                         'price' => 1599.99,
                         'stock' => 15,
-                        'images' => ['products/s24ultra-violet-1.jpg', 'products/s24ultra-violet-2.jpg']
+                        'images' => ['http://127.0.0.1:8000/storage/products/3.webp', 'http://127.0.0.1:8000/storage/products/1.webp']
                     ]
                 ]
             ]

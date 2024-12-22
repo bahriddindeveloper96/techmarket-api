@@ -50,19 +50,20 @@ Route::prefix('admin')->group(function () {
             Route::get('/{id}', [ProductController::class, 'show']);
             Route::put('/{id}', [ProductController::class, 'update']);
             Route::delete('/{id}', [ProductController::class, 'destroy']);
-            Route::get('/attributes/{categoryId}', [ProductController::class, 'getAttributesByCategory']);
-            Route::post('/{product}/attributes', [ProductController::class, 'storeAttributes']);
-            Route::post('/{product}/variants', [ProductController::class, 'storeVariants']);
-            Route::post('/upload-images', [ProductController::class, 'uploadImages']);
-            Route::post('/{product}/toggle-active', [ProductController::class, 'toggleActive']);
-            Route::post('/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
-            Route::post('/bulk-delete', [ProductController::class, 'bulkDelete']);
-            Route::post('/bulk-update', [ProductController::class, 'bulkUpdate']);
-            Route::get('/{product}/variants', [ProductController::class, 'getVariants']);
-            Route::post('/{product}/variants', [ProductController::class, 'addVariant']);
-            Route::get('/{product}/variants/{variant}', [ProductController::class, 'getVariant']);
-            Route::put('/{product}/variants/{variant}', [ProductController::class, 'updateVariant']);
-            Route::delete('/{product}/variants/{variant}', [ProductController::class, 'deleteVariant']);
+            
+            // Product attributes
+            Route::post('/{productId}/attributes', [ProductController::class, 'storeAttributes']);
+            Route::put('/{productId}/attributes', [ProductController::class, 'updateAttributes']);
+            
+            // Product variants
+            Route::post('/{productId}/variants', [ProductController::class, 'storeVariants']);
+            Route::put('/{productId}/variants', [ProductController::class, 'updateVariants']);
+            Route::get('/{productId}/variants', [ProductController::class, 'getVariants']);
+            Route::get('/{productId}/variants/{variantId}', [ProductController::class, 'getVariant']);
+            Route::delete('/{productId}/variants/{variantId}', [ProductController::class, 'deleteVariant']);
+            Route::put('/{productId}/variants/{variantId}/stock', [ProductController::class, 'updateVariantStock']);
+            Route::put('/{productId}/variants/{variantId}/price', [ProductController::class, 'updateVariantPrice']);
+            Route::get('/{productId}/variants/{variantId}/stock', [ProductController::class, 'getVariantStock']);
         });
 
          // File uploads

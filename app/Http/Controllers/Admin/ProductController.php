@@ -25,7 +25,7 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate each file
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         if ($validator->fails()) {
@@ -40,18 +40,18 @@ class ProductController extends Controller
         try {
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
-                    $path = $image->store('products', 'public'); // Store in the 'products' directory within 'public'
-                    $paths[] = '/storage/' . $path; // Build the public URL
+                    $path = $image->store('products', 'public');
+                    $paths[] = '/storage/' . $path;
                 }
             }
 
             return response()->json([
                 'success' => true,
-                'paths' => $paths,
+                'paths' => $paths
             ]);
+
         } catch (\Exception $e) {
             Log::error('Error uploading images: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Error uploading images',
@@ -267,16 +267,16 @@ class ProductController extends Controller
     public function storeVariants(Request $request, $productId)
     {
         try {
-            $product = Product::with('category.attributeGroups.attributes')->findOrFail($productId);
+            Log::info('Received variant data:', $request->all());
             
-            // Validate request structure
+            $product = Product::findOrFail($productId);
+            
             $validator = Validator::make($request->all(), [
                 'variants' => 'required|array',
                 'variants.*.price' => 'required|numeric|min:0',
                 'variants.*.stock' => 'required|integer|min:0',
                 'variants.*.attribute_values' => 'required|array',
-                'variants.*.images' => 'required|array',
-                'variants.*.images.*' => 'required|string'
+                'variants.*.images' => 'nullable|array'
             ]);
 
             if ($validator->fails()) {
@@ -286,33 +286,16 @@ class ProductController extends Controller
                 ], 422);
             }
 
-            // Get category attributes
-            $categoryAttributes = collect();
-            foreach ($product->category->attributeGroups as $group) {
-                $categoryAttributes = $categoryAttributes->merge($group->attributes);
-            }
-
-            // Validate attribute values against category attributes
-            foreach ($request->variants as $variant) {
-                foreach ($variant['attribute_values'] as $attributeId => $value) {
-                    if (!$categoryAttributes->contains('id', $attributeId)) {
-                        return response()->json([
-                            'success' => false,
-                            'errors' => ['attribute_values' => ["Attribute ID {$attributeId} is not valid for this category"]]
-                        ], 422);
-                    }
-                }
-            }
-
             DB::beginTransaction();
 
-            // Save variants
             foreach ($request->variants as $variantData) {
                 $variant = new ProductVariant();
                 $variant->product_id = $product->id;
                 $variant->price = $variantData['price'];
                 $variant->stock = $variantData['stock'];
-                $variant->images = $variantData['images'];
+                
+                // Use the image paths from the upload endpoint
+                $variant->images = !empty($variantData['images']) ? $variantData['images'] : [];
                 $variant->attribute_values = $variantData['attribute_values'];
                 $variant->save();
 
@@ -327,12 +310,16 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Product variants added successfully',
-                'product' => new ProductResource($product->load(['translations', 'attributes', 'variants.attributes']))
+                'product' => $product->load(['variants.attributes'])
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Adding product variants failed: ' . $e->getMessage());
+            Log::error('Adding product variants failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error adding product variants',

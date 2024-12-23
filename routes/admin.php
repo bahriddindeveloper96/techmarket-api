@@ -64,6 +64,7 @@ Route::prefix('admin')->group(function () {
             Route::put('/{productId}/variants/{variantId}/stock', [ProductController::class, 'updateVariantStock']);
             Route::put('/{productId}/variants/{variantId}/price', [ProductController::class, 'updateVariantPrice']);
             Route::get('/{productId}/variants/{variantId}/stock', [ProductController::class, 'getVariantStock']);
+            Route::post('upload-images', [ProductController::class, 'uploadImages']);
         });
 
          // File uploads

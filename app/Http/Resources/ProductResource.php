@@ -13,7 +13,7 @@ class ProductResource extends JsonResource
             if (!empty($variant->images)) {
                 foreach ($variant->images as $image) {
                     $variantImages[] = [
-                        'image' => $image,
+                        'image' => url($image),
                         
                     ];
                 }
@@ -39,6 +39,9 @@ class ProductResource extends JsonResource
             'category' => new CategoryResource($this->whenLoaded('category')),
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
             'favorites' => $this->whenLoaded('favorites'),
+            // 'images' => array_map(function($image) {
+            //     return url($image);
+            // }, $this->images ?? []),
             'images' => $variantImages,
         ];
     }

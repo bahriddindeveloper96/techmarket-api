@@ -45,30 +45,6 @@ class CategoryController extends Controller
             'data' => $categories
         ]);
     }
-     private function formatCategory($category)
-    {
-        $formattedCategory = [
-            'id' => $category->id,
-            'slug' => $category->slug,
-            'active' => $category->active,
-            'featured' => $category->featured,
-            'order' => $category->order,
-            'image' => $category->image,
-            'translations' => $category->translations,
-            'created_at' => $category->created_at,
-            'updated_at' => $category->updated_at,
-        ];
-
-        // Agar kategoriyaning bolalari bo'lsa
-        if ($category->children && $category->children->count() > 0) {
-            $formattedCategory['children'] = $category->children->map(function ($child) {
-                return $this->formatCategory($child);
-            });
-        }
-
-        return $formattedCategory;
-    }
-
 
     /**
      * @OA\Post(
@@ -105,7 +81,90 @@ class CategoryController extends Controller
      *     )
      * )
      */
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'translations' => 'required|array',
+    //         'translations.en' => 'required|array',
+    //         'translations.en.name' => 'required|string|max:255',
+    //         'translations.en.description' => 'required|string',
+    //         'translations.ru' => 'required|array',
+    //         'translations.ru.name' => 'required|string|max:255',
+    //         'translations.ru.description' => 'required|string',
+    //         'translations.uz' => 'required|array',
+    //         'translations.uz.name' => 'required|string|max:255',
+    //         'translations.uz.description' => 'required|string',
+    //         'image' => 'nullable|string',
+    //         'active' => 'boolean'
+    //     ]);
 
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // Generate unique slug
+    //         $slug = Str::slug($request->input('translations.en.name'));
+    //         $originalSlug = $slug;
+    //         $count = 1;
+
+    //         while (Category::where('slug', $slug)->exists()) {
+    //             $slug = $originalSlug . '-' . $count;
+    //             $count++;
+    //         }
+
+    //         // Create category
+    //         $category = Category::create([
+    //             'user_id' => auth()->id(),
+    //             'slug' => $slug,
+    //             'image' => $request->input('image'),
+    //             'active' => $request->input('active', true)
+    //         ]);
+
+    //         // Create translations
+    //         foreach ($request->translations as $locale => $translation) {
+    //             $category->translations()->create([
+    //                 'locale' => $locale,
+    //                 'name' => $translation['name'],
+    //                 'description' => $translation['description']
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'message' => 'Category created successfully',
+    //             'data' => $category->load('translations')
+    //         ], 201);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Error creating category',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * @OA\Get(
+     *     path="/api/categories/{id}",
+     *     summary="Get category by ID",
+     *     tags={"Categories"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Category not found"
+     *     )
+     * )
+     */
     public function show(Category $category)
     {
         return response()->json($category->load('translations'));
@@ -152,7 +211,106 @@ class CategoryController extends Controller
      *     )
      * )
      */
+    // public function update(Request $request, Category $category)
+    // {
+    //     $request->validate([
+    //         'translations' => 'required|array',
+    //         'translations.en' => 'required|array',
+    //         'translations.en.name' => 'required|string|max:255',
+    //         'translations.en.description' => 'required|string',
+    //         'translations.ru' => 'required|array',
+    //         'translations.ru.name' => 'required|string|max:255',
+    //         'translations.ru.description' => 'required|string',
+    //         'translations.uz' => 'required|array',
+    //         'translations.uz.name' => 'required|string|max:255',
+    //         'translations.uz.description' => 'required|string',
+    //         'image' => 'nullable|string',
+    //         'active' => 'boolean'
+    //     ]);
 
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // Update category
+    //         $category->update([
+    //             'slug' => Str::slug($request->input('translations.en.name')),
+    //             'image' => $request->input('image'),
+    //             'active' => $request->input('active', true)
+    //         ]);
+
+    //         // Update translations
+    //         foreach ($request->translations as $locale => $translation) {
+    //             $category->translations()->updateOrCreate(
+    //                 ['locale' => $locale],
+    //                 [
+    //                     'name' => $translation['name'],
+    //                     'description' => $translation['description']
+    //                 ]
+    //             );
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'message' => 'Category updated successfully',
+    //             'data' => $category->load('translations')
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Error updating category',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/categories/{id}",
+     *     summary="Delete category",
+     *     tags={"Categories"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Category deleted successfully"
+     *     )
+     * )
+     */
+    // public function destroy(Category $category)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // Delete translations first
+    //         $category->translations()->delete();
+
+    //         // Then delete the category
+    //         $category->delete();
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'message' => 'Category deleted successfully'
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Error deleting category',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    /**
+     * Kategoriya bo'yicha mahsulotlarni olish uchun method
+     */
     public function products(Category $category)
     {
         // return response()->json([
@@ -276,56 +434,6 @@ class CategoryController extends Controller
                 $ids[] = $parentCategory->id;
                 $this->getParentCategoryIds($parentCategory, $ids);
             }
-        }
-    }
-    public function childCategories($parentId)
-    {
-        try {
-            // Parent kategoriyani tekshirish
-            $parentCategory = Category::findOrFail($parentId);
-
-            // Child kategoriyalarni olish
-            $childCategories = Category::with(['translations'])
-                ->where('parent_id', $parentId)
-                ->orderBy('order')
-                ->get()
-                ->map(function ($category) {
-                    return [
-                        'id' => $category->id,
-                        'slug' => $category->slug,
-                        'active' => $category->active,
-                        'featured' => $category->featured,
-                        'order' => $category->order,
-                        'image' => $category->image,
-                        'translations' => $category->translations,
-                        'has_children' => $category->children()->count() > 0,
-                        'created_at' => $category->created_at,
-                        'updated_at' => $category->updated_at
-                    ];
-                });
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'parent_category' => [
-                        'id' => $parentCategory->id,
-                        'slug' => $parentCategory->slug,
-                        'translations' => $parentCategory->translations
-                    ],
-                    'child_categories' => $childCategories
-                ]
-            ]);
-
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Parent category not found'
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving child categories: ' . $e->getMessage()
-            ], 500);
         }
     }
 

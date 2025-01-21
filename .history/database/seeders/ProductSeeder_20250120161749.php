@@ -129,7 +129,7 @@ class ProductSeeder extends Seeder
             [
                 'category_id' => $smartphonesCategory->id,
                 'user_id' => 1,
-                'slug' => 'iphone-15-pro2',
+                'slug' => 'iphone-15-pro',
                 'active' => true,
                 'featured' => true,
                 'attributes' => [
@@ -189,7 +189,7 @@ class ProductSeeder extends Seeder
             [
                 'category_id' => $smartphonesCategory->id,
                 'user_id' => 1,
-                'slug' => 'iphone-15-pro3',
+                'slug' => 'iphone-15-pro',
                 'active' => true,
                 'featured' => true,
                 'attributes' => [

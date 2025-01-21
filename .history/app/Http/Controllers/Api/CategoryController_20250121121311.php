@@ -278,56 +278,6 @@ class CategoryController extends Controller
             }
         }
     }
-    public function childCategories($parentId)
-    {
-        try {
-            // Parent kategoriyani tekshirish
-            $parentCategory = Category::findOrFail($parentId);
-
-            // Child kategoriyalarni olish
-            $childCategories = Category::with(['translations'])
-                ->where('parent_id', $parentId)
-                ->orderBy('order')
-                ->get()
-                ->map(function ($category) {
-                    return [
-                        'id' => $category->id,
-                        'slug' => $category->slug,
-                        'active' => $category->active,
-                        'featured' => $category->featured,
-                        'order' => $category->order,
-                        'image' => $category->image,
-                        'translations' => $category->translations,
-                        'has_children' => $category->children()->count() > 0,
-                        'created_at' => $category->created_at,
-                        'updated_at' => $category->updated_at
-                    ];
-                });
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'parent_category' => [
-                        'id' => $parentCategory->id,
-                        'slug' => $parentCategory->slug,
-                        'translations' => $parentCategory->translations
-                    ],
-                    'child_categories' => $childCategories
-                ]
-            ]);
-
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Parent category not found'
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving child categories: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     /**
      * Get category breadcrumbs

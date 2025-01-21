@@ -129,67 +129,7 @@ class ProductSeeder extends Seeder
             [
                 'category_id' => $smartphonesCategory->id,
                 'user_id' => 1,
-                'slug' => 'iphone-15-pro2',
-                'active' => true,
-                'featured' => true,
-                'attributes' => [
-                    $brandAttr->id => 'Apple',
-                    $modelAttr->id => 'iPhone 15 Pro',
-                    $screenSizeAttr->id => '6.1 inches',
-                    $ramAttr->id => '8GB',
-                    $storageAttr->id => '128GB-512GB'
-                ],
-                'translations' => [
-                    'en' => [
-                        'name' => 'iPhone 15 Pro',
-                        'description' => 'The most advanced iPhone ever with A17 Pro chip and titanium design.'
-                    ],
-                    'ru' => [
-                        'name' => 'iPhone 15 Pro',
-                        'description' => 'Самый продвинутый iPhone с чипом A17 Pro и титановым корпусом.'
-                    ],
-                    'uz' => [
-                        'name' => 'iPhone 15 Pro',
-                        'description' => 'A17 Pro protsessori va titan dizaynli eng ilg\'or iPhone.'
-                    ]
-                ],
-                'variants' => [
-                    [
-                        'attribute_values' => [
-                            $ramAttr->id => '8GB',
-                            $storageAttr->id => '128GB',
-                            $colorAttr->id => 'Black'
-                        ],
-                        'price' => 999.99,
-                        'stock' => 50,
-                        'images' => ['http://192.168.1.108:8000/storage/products/2.webp', 'http://192.168.1.108:8000/storage/products/1.webp']
-                    ],
-                    [
-                        'attribute_values' => [
-                            $ramAttr->id => '8GB',
-                            $storageAttr->id => '256GB',
-                            $colorAttr->id => 'Silver'
-                        ],
-                        'price' => 1099.99,
-                        'stock' => 30,
-                        'images' => ['http://192.168.1.108:8000/storage/products/3.webp', 'http://192.168.1.108:8000/storage/products/2.webp']
-                    ],
-                    [
-                        'attribute_values' => [
-                            $ramAttr->id => '8GB',
-                            $storageAttr->id => '512GB',
-                            $colorAttr->id => 'Gold'
-                        ],
-                        'price' => 1299.99,
-                        'stock' => 20,
-                        'images' => ['http://192.168.1.108:8000/storage/products/3.webp', 'http://192.168.1.108:8000/storage/products/2.webp']
-                    ]
-                ]
-            ],
-            [
-                'category_id' => $smartphonesCategory->id,
-                'user_id' => 1,
-                'slug' => 'iphone-15-pro3',
+                'slug' => 'iphone-15-pro',
                 'active' => true,
                 'featured' => true,
                 'attributes' => [

@@ -55,6 +55,12 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
+        // Get all products with pagination
+        $allProducts = Product::with(['translations', 'category.translations'])
+            ->where('active', true)
+            ->latest()
+            ->paginate(12);
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -62,8 +68,40 @@ class HomeController extends Controller
                 'categories' => $categories,
                 'featured_products' => ProductResource::collection($featuredProducts),
                 'new_products' => ProductResource::collection($newProducts),
-                'popular_products' => ProductResource::collection($popularProducts)
+                'popular_products' => ProductResource::collection($popularProducts),
+                'all_products' => ProductResource::collection($allProducts)
             ]
+        ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/products",
+     *     summary="Get paginated products",
+     *     tags={"Homepage"},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation"
+     *     )
+     * )
+     */
+    public function products()
+    {
+        $products = Product::with(['translations', 'category.translations'])
+            ->where('active', true)
+            ->latest()
+            ->paginate(12);
+
+        return response()->json([
+            'success' => true,
+            'data' => ProductResource::collection($products)
         ]);
     }
 }
